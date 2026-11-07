@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.test-tmp/
+san_pham/
+text_tho/
+data/
+*.pdf
+*.log
+.env
+.env.*
+!.env.example
