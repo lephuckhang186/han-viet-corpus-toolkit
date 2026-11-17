@@ -14,8 +14,8 @@ def info(path: Path) -> dict:
 
 
 def render_page(path: Path, page_number: int, dpi: int = 100):
-    if not 36 <= dpi <= 600:
-        raise ValueError("DPI cần trong khoảng 36–600.")
+    if not 25 <= dpi <= 600:
+        raise ValueError("DPI cần trong khoảng 25–600.")
     with pdfium.PdfDocument(str(path)) as doc:
         if not 1 <= page_number <= len(doc):
             raise ValueError(f"PDF có {len(doc)} trang, không có trang {page_number}.")

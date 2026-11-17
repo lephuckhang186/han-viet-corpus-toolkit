@@ -4,9 +4,10 @@ __pycache__/
 .test-tmp/
 san_pham/
 text_tho/
-data/
 *.pdf
 *.log
 .env
 .env.*
 !.env.example
+/plans
+/tests

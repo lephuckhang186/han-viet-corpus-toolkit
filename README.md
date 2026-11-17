@@ -100,7 +100,7 @@ không thuộc nội dung Hán và làm sạch ký tự là bước 5, không ph
 |---|---|---|
 | `cat_ly_tran.py` | Bài 131–207; PDF 187–366 | Trên trang 187, phần trên là cuối bài 130 của TV1; chỉ lấy bài 131 phía dưới. |
 | `cat_van_sach.py` | Bài 14–18; PDF 188–365 | Mốc đầu dịch nghĩa/Hán từng bài có trong script; cần tự kiểm tra điểm kết thúc. |
-| `cat_bac_su.py` | Việt PDF 39–75; Hán PDF 54–106 để kiểm kê | Hai khoảng không phải bản dịch tương ứng. Dò đúng quyển/đoạn mới dùng chung mã. |
+| `cat_bac_su.py` | Theo bảng mới: Việt PDF 32–61; Hán PDF 49–101 | Cắt ảnh vùng lớn; Việt chỉ chỉnh mốc đầu/cuối phần giao. Không tách cột/đoạn, không dóng hàng, không lấy Hán 102. |
 | `cat_hich_tuong_si.py` | Hán/dịch âm 11–20; dịch nghĩa 4–6; diễn thơ 21–26 | Đây là mẫu chung TV2 kiểm tra, không cộng bộ cặp thứ hai. |
 
 Số trang luôn là thứ tự trong **PDF gốc**, tính từ 1. Khi cần trang lân cận để giữ
@@ -209,8 +209,20 @@ Không sao chép mã nguồn hay cài repo đó; phần cắt tác phẩm/bốn 
 
 ## Các việc chưa thực hiện
 
-Chưa cắt toàn bộ phần TV2, chưa OCR, làm sạch, dóng hàng bốn bản văn hoặc đếm cặp
-hợp lệ. Guideline quy định TSV/XLSX hai cột Hán–Việt; yêu cầu giữ bốn phiên bản
+Phần nguồn TV2 đang bàn giao ở bước 3; Bắc sứ Việt là TXT thô, chưa làm sạch hoặc chuẩn hóa. Chưa OCR Hán, chưa dóng hàng bốn bản văn hoặc đếm cặp hợp lệ. Guideline quy định TSV/XLSX hai cột Hán–Việt; yêu cầu giữ bốn phiên bản
 của cô được bảo toàn ở nguồn và manifest, không tự thay đổi schema bàn giao.
 Ranh giới/ánh xạ Bắc sứ vẫn cần kiểm tra nội dung; không mặc định bản Hán và Việt
 khớp theo số trang hoặc khoảng chia kiểm kê.
+
+## Bắc sứ TV2: bản Việt TXT nguồn thô
+
+Bản bàn giao Việt ở `san_pham/TV02/CV06_CPO_09/01_nguon/viet/dich_nghia/`:
+
+- `CPO_09_TV02_quyen01_phan_tv02_dich_nghia_v01.txt`: PDF 32–54; bắt đầu sau mục 21.
+- `CPO_09_TV02_quyen04_phan_tv02_dich_nghia_v01.txt`: PDF 55–61; dừng đúng câu chốt trong `phancong.md`.
+
+Đây là nguồn PDF Text: đọc lớp chữ sẵn có, không OCR. Giữ nguyên chú thích, chỉ mục, số trang trong phạm vi, ký tự nguồn, khoảng trắng và xuống dòng; không sửa font hoặc ghép đoạn. Ký tự form feed `U+000C` ngăn các trang; chỉ mục đối chiếu ở `05_quan_ly/nguon_tho_viet.json`. PDF gốc và bản sao vẫn nguyên vẹn.
+
+Theo guideline, trích xuất text thuộc bước 4. TXT này chỉ là bản làm việc thô cho bàn giao nguồn; chưa chứng nhận hoàn thành bước 4/5. Bản đã chuẩn hóa ở `03_text_sach/viet.txt` và các TXT đã bỏ chú thích ở `02_ocr_tho/viet/` được rút khỏi sản phẩm hiện tại, giữ bản trước trong lịch sử hoàn tác. 30 PNG Việt cũ chỉ để tra lại, không phải bản Việt nộp.
+
+Xem trước: `.\.venv\Scripts\python.exe .\plans\trich_text_bac_su_viet.py`. Thêm `--luu` để ghi TXT thô qua lịch sử. Kế hoạch `bac_su_tv02.csv/jsonl` chỉ cắt 43 ảnh Hán; không tạo ảnh Việt. Quyển 1 Hán giữ 34 PNG, quyển 4 giữ 9 PNG, vẫn bỏ 10 trang theo yêu cầu trước.
