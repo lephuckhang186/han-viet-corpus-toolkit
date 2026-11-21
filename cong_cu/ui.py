@@ -53,7 +53,7 @@ class CropWindow:
         ttk.Button(row, text="Mở trang", command=self.load_page).pack(side="left", padx=4)
         ttk.Button(row, text="→", command=lambda: self.navigate(1)).pack(side="left")
         ttk.Label(row, text="  Xem ở DPI:").pack(side="left")
-        zoom = ttk.Combobox(row, textvariable=self.preview_dpi, values=[75, 100, 150, 200], width=5, state="readonly")
+        zoom = ttk.Combobox(row, textvariable=self.preview_dpi, values=[25, 50, 75, 100, 150, 200], width=5, state="readonly")
         zoom.pack(side="left"); zoom.bind("<<ComboboxSelected>>", lambda _: self.load_page())
         ttk.Button(row, text="Mở TXT để chọn chữ", command=self.open_text).pack(side="right")
         row = ttk.Frame(top); row.pack(fill="x", pady=4)

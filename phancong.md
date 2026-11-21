@@ -6,12 +6,12 @@ Phạm vi: chuẩn bị nguồn, sao lưu, thống nhất tên và ghi rõ quy�
 
 Tính trang theo số thứ tự trong trình đọc PDF, bắt đầu từ 1.
 
-| Người | Văn sách thi Đình tập 2 | Thơ văn Lý–Trần tập 3 | Bắc sứ thông lục: bản Việt |
-|---|---|---|---|
-| TV1 | Bài 8–13, PDF 5–187: 183 trang | Bài 1–130, PDF 13–187: 175 trang | PDF 2–38: 37 trang |
-| TV2 | Bài 14–18, PDF 188–365: 178 trang | Bài 131–207, PDF 187–366: 180 trang | PDF 39–75: 37 trang |
-| TV3 | Bài 19–22, PDF 366–564: 199 trang | Bài 208–313, PDF 367–525: 159 trang | PDF 76–111: 36 trang |
-| TV4 | Bài 23–24, PDF 565–698: 134 trang | Bài 314–415, PDF 526–749: 224 trang | PDF 112–148: 37 trang |
+| Người | Văn sách thi Đình tập 2 | Thơ văn Lý–Trần tập 3 | Bắc sứ thông lục: bản Hán | Bắc sứ thông lục: bản Việt |
+|---|---|---|---|---|
+| TV1 | Bài 8–13, PDF 5–187: 183 trang | Bài 1–130, PDF 13–187: 175 trang | PDF 9-49: 40 trang | PDF: 2-32: Hết phần "21. Quảng Tây, Tân Ninh châu, Chính đƣờng. (Tƣ văn không kê khai)| 
+| TV2 | Bài 14–18, PDF 188–365: 178 trang | Bài 131–207, PDF 187–366: 180 trang | PDF 49–101: 52 trang | PDF: 32-61: Hết phần "―Trong thuyền không có việc gì thì đại nhân chớ tiếc thời gian qua lại chỗ tôi chuyện trò, để tôi thêm vui vẻ cảm kích."‖
+| TV3 | Bài 19–22, PDF 366–564: 199 trang | Bài 208–313, PDF 367–525: 159 trang | PDF 102–154: 52 trang | PDF: 61-102: Hết phần "[51a] đinh phu huyện kia chưa đến, lại phải phiền phức gửi công văn chờ đợi phu thợ kéo thuyền"|
+| TV4 | Bài 23–24, PDF 565–698: 134 trang | Bài 314–415, PDF 526–749: 224 trang | PDF 155–207: 52 trang | PDF: 102-148: Phần còn lại|
 
 - Mỗi người có 358 trang phạm vi ở hai tuyển tập scan, cộng 36–37 trang mốc bản Việt Bắc sứ. Đây là mức chia gần đều để chuẩn bị nguồn, không chứng minh thời gian OCR hoặc số cặp tương đương.
 - Trang PDF 187 của Lý–Trần có cuối bài 130 và đầu bài 131: TV1 nhận bài 130, TV2 nhận bài 131. Ghi quyền sở hữu theo bài, không nhân đôi dữ liệu.
