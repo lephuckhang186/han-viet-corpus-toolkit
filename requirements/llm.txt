@@ -1,0 +1,3 @@
+# LLM verification and schema validation dependencies (stage 05 & 06)
+-r base.txt
+jsonschema

@@ -1,0 +1,9 @@
+# Core stage dependencies (source preparation, rule-based cleaning, segmentation, Lab/CLC alignment, tabular export)
+# Versions verified against local .venv: pypdfium2==5.14.0, Pillow==13.0.0, PyYAML==6.0.4, requests==2.34.2, XlsxWriter==3.3.3, pandas==3.1.1, numpy==2.5.5
+pypdfium2==5.14.0
+Pillow==13.0.0
+PyYAML>=6.0
+requests>=2.31
+XlsxWriter>=3.2
+pandas>=2.0
+numpy>=1.26

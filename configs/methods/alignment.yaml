@@ -1,0 +1,15 @@
+# Default alignment methods: Lab (Han - Dich am), CLC (Han - Dich nghia), Manual/LLM prompt (Han - Dich tho)
+# Bertalign and Vecalign remain disabled by default per Section 3.1.
+am_backend: lab
+nghia_backend: clc
+tho_backend: manual_prompt
+experimental_backends:
+  bertalign_enabled: false
+  vecalign_enabled: false
+export:
+  default_columns: ["Hán", "Dịch âm", "Dịch nghĩa", "Dịch thơ"]
+  preserve_legacy_loaders: true
+llm_verification:
+  enabled: false
+  require_manual_approval: true
+  never_overwrite_approved_review: true

@@ -1,0 +1,4 @@
+# Development, notebook execution, and testing
+-r base.txt
+ipykernel
+pytest

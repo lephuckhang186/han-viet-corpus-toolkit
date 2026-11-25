@@ -1,0 +1,17 @@
+member_id: TV04
+member_number: 4
+topic_code: CV06
+assignments:
+  CPO_09:
+    viet_pages: [[102, 148]]
+    han_pages: [[155, 207]]
+    first_work: quyen0001
+    work_range: null
+  CPO_11:
+    pages: [[565, 698]]
+    first_work: bai0023
+    work_range: [23, 24]
+  CPO_12:
+    pages: [[526, 749]]
+    first_work: bai0314
+    work_range: [314, 415]

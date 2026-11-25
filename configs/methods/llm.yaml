@@ -1,0 +1,16 @@
+# Chỉ dùng cho Stage 06 (Hậu kiểm Dóng hàng / Alignment Verification).
+# Stage 03 (Text Cleaning) KHÔNG dùng LLM API client; xem hướng dẫn copy prompt trong src/hanviet/cleaning/README.md.
+provider: null
+model: null
+api_key_env: LLM_API_KEY
+base_url_env: LLM_BASE_URL
+timeout_seconds: 60
+max_retries: 2
+backoff_seconds: 2.0
+temperature: 0.0
+cache_enabled: true
+batch_size: 15
+prompt_versions:
+  poetry_alignment: "1.0.0"
+  alignment_verification: "1.0.0"
+  alignment_repair: "1.0.0"

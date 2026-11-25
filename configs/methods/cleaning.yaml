@@ -1,0 +1,12 @@
+rule_based:
+  preserve_protected_rules: true
+  input_granularity: parts
+  known_non_content_lines: {}
+  punctuation_replacements: {}
+
+manual_llm_review:
+  mode: manual_prompt_or_coding_agent
+  requires_api_key: false
+  auto_call_llm: false
+  review_csv_allowed_actions: ["", "keep", "replace", "delete", "join_next"]
+  preserve_existing_user_decisions: true

@@ -1,0 +1,9 @@
+code: CPO_11
+short_name: VANSACH2
+title: Văn sách thi Đình Thăng Long–Hà Nội, tập 2
+default_genre: prose
+sources:
+  chung:
+    filename: Van_sach_thi_Dinh_Thang_Long_Ha_Noi_T2.pdf
+    archive_side: chung
+    mode: ocr

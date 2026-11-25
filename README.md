@@ -478,6 +478,10 @@ cùng sách nhưng không được ghi cùng lúc: khóa ghi giúp tránh mất 
 | `cong_cu/ui.py`, `cong_cu/text_ui.py` | Giao diện PDF và TXT. |
 | `cong_cu/dong_hang.py`, `cong_cu/alignment_notebook.py` | Tách đơn vị, kiểm tra links và chạy dóng/xuất theo bài. |
 | `cong_cu/alignment_backends.py` | Chạy code Lab, đọc cache CLC và gửi request khi được cấu hình. |
+| `src/hanviet/` | Package lõi đã mô-đun hóa theo từng giai đoạn (`common`, `source_preparation`, `extraction`, `cleaning`, `segmentation`, `alignment`, `exporters`, `evaluation`). |
+| `configs/`, `schemas/`, `prompts/`, `scripts/` | Cấu hình YAML đa môi trường, JSON Schema kiểm tra đầu ra, prompt tách biệt theo giai đoạn và CLI chạy từng bước. |
+| `src/hanviet/cleaning/README.md`, `notebooks/README.md` | Hướng dẫn làm sạch văn bản Hán/Việt, quy trình dùng LLM hỗ trợ kiểm tra thủ công (kèm prompt sao chép trực tiếp, không cần API key) và giải thích cột `duyet_lam_sach.csv`. |
+| `docs/` | Tài liệu kiến trúc, từ điển dữ liệu, phương pháp luận, quy trình đánh giá và báo cáo tái cấu trúc bằng tiếng Việt. |
 
 Không gộp toàn bộ xử lý vào file cấu hình hoặc một script lớn. Đã tham khảo cách
 giữ nguồn, xuất ảnh và lưu manifest của [pdfslice-py](https://github.com/obj-see/pdfslice-py).

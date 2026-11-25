@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hanviet"
+version = "0.2.0"
+description = "Stage-based modular toolkit for Han-Viet corpus preparation, Dual-OCR cross-check, cleaning, segmentation, alignment, and LLM-assisted verification."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pypdfium2==5.14.0",
+    "Pillow==13.0.0",
+    "PyYAML>=6.0",
+    "requests>=2.31",
+    "XlsxWriter>=3.2",
+    "pandas>=2.0",
+    "numpy>=1.26",
+]
+
+[project.optional-dependencies]
+ocr = [
+    "pytesseract>=0.3.10",
+    "paddleocr>=3.0",
+    "paddlex>=3.0",
+    "transformers>=5.0",
+    "vietocr==0.3.13",
+    "einops>=0.8,<0.9",
+    "gdown>=5.2,<6",
+    "tqdm",
+]
+alignment = [
+    "huggingface_hub",
+    "sentence-transformers",
+]
+llm = [
+    "jsonschema>=4.0",
+]
+dev = [
+    "pytest>=8.0",
+    "ipykernel",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]

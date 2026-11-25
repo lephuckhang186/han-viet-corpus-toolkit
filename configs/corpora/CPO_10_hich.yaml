@@ -1,0 +1,9 @@
+code: CPO_10
+short_name: HICH
+title: Hịch tướng sĩ — mẫu chung
+default_genre: prose
+sources:
+  chung:
+    filename: HichTuongSi_TranQuocTuan.pdf
+    archive_side: chung
+    mode: ocr

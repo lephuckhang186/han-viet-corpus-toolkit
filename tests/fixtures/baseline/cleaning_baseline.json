@@ -1,0 +1,576 @@
+{
+  "cases": {
+    "han": [
+      {
+        "input": "  臣對　明主（） ",
+        "output": [
+          "臣對 明主",
+          [
+            "whitespace",
+            "empty_brackets"
+          ],
+          []
+        ]
+      },
+      {
+        "input": "詩曰：關關雎鳩(1)",
+        "output": [
+          "詩曰：關關雎鳩(1)",
+          [],
+          [
+            "possible_note_marker"
+          ]
+        ]
+      },
+      {
+        "input": "abc 漢字 % [MASK]",
+        "output": [
+          "abc 漢字 % [MASK]",
+          [],
+          [
+            "latin_in_han",
+            "han_symbol_check"
+          ]
+        ]
+      },
+      {
+        "input": "【 】 1234",
+        "output": [
+          "1234",
+          [
+            "empty_brackets"
+          ],
+          [
+            "standalone_number"
+          ]
+        ]
+      },
+      {
+        "input": "臣對\t【1】",
+        "output": [
+          "臣對 【1】",
+          [
+            "whitespace"
+          ],
+          [
+            "possible_note_marker"
+          ]
+        ]
+      }
+    ],
+    "viet_am": [
+      {
+        "input": "Phiên âm:",
+        "output": [
+          "",
+          [
+            "standalone_version_label"
+          ],
+          []
+        ]
+      },
+      {
+        "input": "  Thần   đối   mình  chủ ( ) ",
+        "output": [
+          "Thần đối mình chủ",
+          [
+            "vietnamese_nfc",
+            "whitespace",
+            "empty_brackets"
+          ],
+          []
+        ]
+      },
+      {
+        "input": "ngƣời thƣợng tƣớng [12a]",
+        "output": [
+          "ngƣời thƣợng tƣớng [12a]",
+          [],
+          [
+            "possible_note_marker",
+            "letters_attached_to_digits"
+          ]
+        ]
+      },
+      {
+        "input": "từ123 chữ_rác %",
+        "output": [
+          "từ123 chữ_rác %",
+          [],
+          [
+            "letters_attached_to_digits",
+            "unexpected_symbol",
+            "percent_check"
+          ]
+        ]
+      },
+      {
+        "input": "123",
+        "output": [
+          "123",
+          [],
+          [
+            "standalone_number"
+          ]
+        ]
+      }
+    ],
+    "viet_nghia_native": [
+      {
+        "input": "Dịch nghĩa:",
+        "output": [
+          "",
+          [
+            "standalone_version_label"
+          ],
+          []
+        ]
+      },
+      {
+        "input": "Chú thích:",
+        "output": [
+          "Chú thích:",
+          [],
+          [
+            "possible_note_section"
+          ]
+        ]
+      },
+      {
+        "input": "Ngƣời thƣợng tƣớng [53b] năm [1759] (1)",
+        "output": [
+          "Người thượng tướng năm [1759] (1)",
+          [
+            "vietnamese_pdf_glyph",
+            "vietnamese_pdf_folio",
+            "whitespace"
+          ],
+          [
+            "possible_note_marker"
+          ]
+        ]
+      },
+      {
+        "input": "Trong thuýên không có việc gì",
+        "output": [
+          "Trong thuýên không có việc gì",
+          [
+            "vietnamese_nfc"
+          ],
+          []
+        ]
+      }
+    ],
+    "suffix_digit_suggestions": [
+      {
+        "input": "chữ123 và số 456",
+        "output": "chữ và số 456"
+      },
+      {
+        "input": "năm 1759",
+        "output": "năm 1759"
+      },
+      {
+        "input": "a1b2 chữ2",
+        "output": "a1b2 chữ"
+      }
+    ]
+  },
+  "records": [
+    {
+      "row_id": "806a5c5ab1dc471e93e0ad22",
+      "relative_path": "ThiDinh/02_ocr_tho/han/CPO_11_TV04_bai0024_han_v01/phan0001_pdfp0608.txt",
+      "source_sha256": "abc123",
+      "code": "CPO_11",
+      "kind": "han",
+      "work": "CPO_11_TV04_bai0024_han_v01",
+      "page": 1,
+      "line": 1,
+      "raw": "  臣對（） ",
+      "clean": "臣對",
+      "pdf_page": "",
+      "source_image": "",
+      "polygon": null,
+      "automatic_rules": "whitespace;empty_brackets",
+      "reasons": "",
+      "suggested": "臣對",
+      "context_before": "",
+      "context_after": "第一名",
+      "oov_tokens": ""
+    },
+    {
+      "row_id": "42e773560d5ca6ccf5389e13",
+      "relative_path": "ThiDinh/02_ocr_tho/han/CPO_11_TV04_bai0024_han_v01/phan0001_pdfp0608.txt",
+      "source_sha256": "abc123",
+      "code": "CPO_11",
+      "kind": "han",
+      "work": "CPO_11_TV04_bai0024_han_v01",
+      "page": 1,
+      "line": 2,
+      "raw": "第一名",
+      "clean": "第一名",
+      "pdf_page": "",
+      "source_image": "",
+      "polygon": null,
+      "automatic_rules": "",
+      "reasons": "page_boundary_check",
+      "suggested": "第一名",
+      "context_before": "  臣對（） ",
+      "context_after": "",
+      "oov_tokens": ""
+    },
+    {
+      "row_id": "a092af235c439e86c21f03d7",
+      "relative_path": "ThiDinh/02_ocr_tho/han/CPO_11_TV04_bai0024_han_v01/phan0001_pdfp0608.txt",
+      "source_sha256": "abc123",
+      "code": "CPO_11",
+      "kind": "han",
+      "work": "CPO_11_TV04_bai0024_han_v01",
+      "page": 2,
+      "line": 1,
+      "raw": "詩曰：關關",
+      "clean": "詩曰：關關",
+      "pdf_page": "",
+      "source_image": "",
+      "polygon": null,
+      "automatic_rules": "",
+      "reasons": "",
+      "suggested": "詩曰：關關",
+      "context_before": "",
+      "context_after": "123",
+      "oov_tokens": ""
+    },
+    {
+      "row_id": "7aa3e0dca77c32c45c2f9fd1",
+      "relative_path": "ThiDinh/02_ocr_tho/han/CPO_11_TV04_bai0024_han_v01/phan0001_pdfp0608.txt",
+      "source_sha256": "abc123",
+      "code": "CPO_11",
+      "kind": "han",
+      "work": "CPO_11_TV04_bai0024_han_v01",
+      "page": 2,
+      "line": 2,
+      "raw": "123",
+      "clean": "123",
+      "pdf_page": "",
+      "source_image": "",
+      "polygon": null,
+      "automatic_rules": "",
+      "reasons": "standalone_number",
+      "suggested": "123",
+      "context_before": "詩曰：關關",
+      "context_after": "",
+      "oov_tokens": ""
+    },
+    {
+      "row_id": "38ccbcc628d08fc98317b282",
+      "relative_path": "BacSu/01_nguon/viet/dich_nghia/CPO_09_TV04_quyen01_dich_nghia_v01.txt",
+      "source_sha256": "def456",
+      "code": "CPO_09",
+      "kind": "dich_nghia",
+      "work": "CPO_09_TV04_quyen01_dich_nghia_v01",
+      "page": 1,
+      "line": 1,
+      "raw": "Dịch nghĩa:",
+      "clean": "",
+      "pdf_page": "",
+      "source_image": "",
+      "polygon": null,
+      "automatic_rules": "standalone_version_label",
+      "reasons": "",
+      "suggested": "",
+      "context_before": "",
+      "context_after": "Ngƣời thƣợng tƣớng [53b]",
+      "oov_tokens": ""
+    },
+    {
+      "row_id": "e8fc4cb4b3849f0c7e6dd7a0",
+      "relative_path": "BacSu/01_nguon/viet/dich_nghia/CPO_09_TV04_quyen01_dich_nghia_v01.txt",
+      "source_sha256": "def456",
+      "code": "CPO_09",
+      "kind": "dich_nghia",
+      "work": "CPO_09_TV04_quyen01_dich_nghia_v01",
+      "page": 1,
+      "line": 2,
+      "raw": "Ngƣời thƣợng tƣớng [53b]",
+      "clean": "Người thượng tướng",
+      "pdf_page": "",
+      "source_image": "",
+      "polygon": null,
+      "automatic_rules": "vietnamese_pdf_glyph;vietnamese_pdf_folio;whitespace",
+      "reasons": "page_boundary_check",
+      "suggested": "Người thượng tướng",
+      "context_before": "Dịch nghĩa:",
+      "context_after": "",
+      "oov_tokens": ""
+    },
+    {
+      "row_id": "bc4cf7dbc98e60335df8ef97",
+      "relative_path": "BacSu/01_nguon/viet/dich_nghia/CPO_09_TV04_quyen01_dich_nghia_v01.txt",
+      "source_sha256": "def456",
+      "code": "CPO_09",
+      "kind": "dich_nghia",
+      "work": "CPO_09_TV04_quyen01_dich_nghia_v01",
+      "page": 2,
+      "line": 1,
+      "raw": "Câu hai.",
+      "clean": "Câu hai.",
+      "pdf_page": "",
+      "source_image": "",
+      "polygon": null,
+      "automatic_rules": "",
+      "reasons": "",
+      "suggested": "Câu hai.",
+      "context_before": "",
+      "context_after": "",
+      "oov_tokens": ""
+    }
+  ],
+  "applied_rows": [
+    {
+      "row_id": "806a5c5ab1dc471e93e0ad22",
+      "relative_path": "ThiDinh/02_ocr_tho/han/CPO_11_TV04_bai0024_han_v01/phan0001_pdfp0608.txt",
+      "source_sha256": "abc123",
+      "code": "CPO_11",
+      "kind": "han",
+      "work": "CPO_11_TV04_bai0024_han_v01",
+      "page": 1,
+      "line": 1,
+      "raw": "  臣對（） ",
+      "clean": "臣對",
+      "pdf_page": "",
+      "source_image": "",
+      "polygon": null,
+      "automatic_rules": "whitespace;empty_brackets",
+      "reasons": "",
+      "suggested": "臣對",
+      "context_before": "",
+      "context_after": "第一名",
+      "oov_tokens": "",
+      "text": "臣對",
+      "deleted": false,
+      "join_next": false
+    },
+    {
+      "row_id": "42e773560d5ca6ccf5389e13",
+      "relative_path": "ThiDinh/02_ocr_tho/han/CPO_11_TV04_bai0024_han_v01/phan0001_pdfp0608.txt",
+      "source_sha256": "abc123",
+      "code": "CPO_11",
+      "kind": "han",
+      "work": "CPO_11_TV04_bai0024_han_v01",
+      "page": 1,
+      "line": 2,
+      "raw": "第一名",
+      "clean": "第一名",
+      "pdf_page": "",
+      "source_image": "",
+      "polygon": null,
+      "automatic_rules": "",
+      "reasons": "page_boundary_check",
+      "suggested": "第一名",
+      "context_before": "  臣對（） ",
+      "context_after": "",
+      "oov_tokens": "",
+      "text": "第一名",
+      "deleted": false,
+      "join_next": false
+    },
+    {
+      "row_id": "a092af235c439e86c21f03d7",
+      "relative_path": "ThiDinh/02_ocr_tho/han/CPO_11_TV04_bai0024_han_v01/phan0001_pdfp0608.txt",
+      "source_sha256": "abc123",
+      "code": "CPO_11",
+      "kind": "han",
+      "work": "CPO_11_TV04_bai0024_han_v01",
+      "page": 2,
+      "line": 1,
+      "raw": "詩曰：關關",
+      "clean": "詩曰：關關",
+      "pdf_page": "",
+      "source_image": "",
+      "polygon": null,
+      "automatic_rules": "",
+      "reasons": "",
+      "suggested": "詩曰：關關",
+      "context_before": "",
+      "context_after": "123",
+      "oov_tokens": "",
+      "text": "詩曰：關關",
+      "deleted": false,
+      "join_next": true
+    },
+    {
+      "row_id": "7aa3e0dca77c32c45c2f9fd1",
+      "relative_path": "ThiDinh/02_ocr_tho/han/CPO_11_TV04_bai0024_han_v01/phan0001_pdfp0608.txt",
+      "source_sha256": "abc123",
+      "code": "CPO_11",
+      "kind": "han",
+      "work": "CPO_11_TV04_bai0024_han_v01",
+      "page": 2,
+      "line": 2,
+      "raw": "123",
+      "clean": "123",
+      "pdf_page": "",
+      "source_image": "",
+      "polygon": null,
+      "automatic_rules": "",
+      "reasons": "standalone_number",
+      "suggested": "123",
+      "context_before": "詩曰：關關",
+      "context_after": "",
+      "oov_tokens": "",
+      "text": "123.",
+      "deleted": false,
+      "join_next": false
+    },
+    {
+      "row_id": "38ccbcc628d08fc98317b282",
+      "relative_path": "BacSu/01_nguon/viet/dich_nghia/CPO_09_TV04_quyen01_dich_nghia_v01.txt",
+      "source_sha256": "def456",
+      "code": "CPO_09",
+      "kind": "dich_nghia",
+      "work": "CPO_09_TV04_quyen01_dich_nghia_v01",
+      "page": 1,
+      "line": 1,
+      "raw": "Dịch nghĩa:",
+      "clean": "",
+      "pdf_page": "",
+      "source_image": "",
+      "polygon": null,
+      "automatic_rules": "standalone_version_label",
+      "reasons": "",
+      "suggested": "",
+      "context_before": "",
+      "context_after": "Ngƣời thƣợng tƣớng [53b]",
+      "oov_tokens": "",
+      "text": "",
+      "deleted": false,
+      "join_next": false
+    },
+    {
+      "row_id": "e8fc4cb4b3849f0c7e6dd7a0",
+      "relative_path": "BacSu/01_nguon/viet/dich_nghia/CPO_09_TV04_quyen01_dich_nghia_v01.txt",
+      "source_sha256": "def456",
+      "code": "CPO_09",
+      "kind": "dich_nghia",
+      "work": "CPO_09_TV04_quyen01_dich_nghia_v01",
+      "page": 1,
+      "line": 2,
+      "raw": "Ngƣời thƣợng tƣớng [53b]",
+      "clean": "Người thượng tướng",
+      "pdf_page": "",
+      "source_image": "",
+      "polygon": null,
+      "automatic_rules": "vietnamese_pdf_glyph;vietnamese_pdf_folio;whitespace",
+      "reasons": "page_boundary_check",
+      "suggested": "Người thượng tướng",
+      "context_before": "Dịch nghĩa:",
+      "context_after": "",
+      "oov_tokens": "",
+      "text": "Người thượng tướng",
+      "deleted": false,
+      "join_next": false
+    },
+    {
+      "row_id": "bc4cf7dbc98e60335df8ef97",
+      "relative_path": "BacSu/01_nguon/viet/dich_nghia/CPO_09_TV04_quyen01_dich_nghia_v01.txt",
+      "source_sha256": "def456",
+      "code": "CPO_09",
+      "kind": "dich_nghia",
+      "work": "CPO_09_TV04_quyen01_dich_nghia_v01",
+      "page": 2,
+      "line": 1,
+      "raw": "Câu hai.",
+      "clean": "Câu hai.",
+      "pdf_page": "",
+      "source_image": "",
+      "polygon": null,
+      "automatic_rules": "",
+      "reasons": "",
+      "suggested": "Câu hai.",
+      "context_before": "",
+      "context_after": "",
+      "oov_tokens": "",
+      "text": "Câu hai.",
+      "deleted": false,
+      "join_next": false
+    }
+  ],
+  "audit_log": [
+    {
+      "row_id": "806a5c5ab1dc471e93e0ad22",
+      "source": "ThiDinh/02_ocr_tho/han/CPO_11_TV04_bai0024_han_v01/phan0001_pdfp0608.txt",
+      "source_sha256": "abc123",
+      "page": 1,
+      "pdf_page": "",
+      "line": 1,
+      "before": "  臣對（） ",
+      "after": "臣對",
+      "action": "automatic",
+      "rules": "whitespace;empty_brackets"
+    },
+    {
+      "row_id": "806a5c5ab1dc471e93e0ad22",
+      "source": "ThiDinh/02_ocr_tho/han/CPO_11_TV04_bai0024_han_v01/phan0001_pdfp0608.txt",
+      "source_sha256": "abc123",
+      "page": 1,
+      "pdf_page": "",
+      "line": 1,
+      "before": "臣對",
+      "after": "臣對",
+      "action": "keep",
+      "note": "ok"
+    },
+    {
+      "row_id": "a092af235c439e86c21f03d7",
+      "source": "ThiDinh/02_ocr_tho/han/CPO_11_TV04_bai0024_han_v01/phan0001_pdfp0608.txt",
+      "source_sha256": "abc123",
+      "page": 2,
+      "pdf_page": "",
+      "line": 1,
+      "before": "詩曰：關關",
+      "after": "詩曰：關關",
+      "action": "join_next",
+      "note": "joined"
+    },
+    {
+      "row_id": "7aa3e0dca77c32c45c2f9fd1",
+      "source": "ThiDinh/02_ocr_tho/han/CPO_11_TV04_bai0024_han_v01/phan0001_pdfp0608.txt",
+      "source_sha256": "abc123",
+      "page": 2,
+      "pdf_page": "",
+      "line": 2,
+      "before": "123",
+      "after": "123.",
+      "action": "replace",
+      "note": "punct"
+    },
+    {
+      "row_id": "38ccbcc628d08fc98317b282",
+      "source": "BacSu/01_nguon/viet/dich_nghia/CPO_09_TV04_quyen01_dich_nghia_v01.txt",
+      "source_sha256": "def456",
+      "page": 1,
+      "pdf_page": "",
+      "line": 1,
+      "before": "Dịch nghĩa:",
+      "after": "",
+      "action": "automatic",
+      "rules": "standalone_version_label"
+    },
+    {
+      "row_id": "e8fc4cb4b3849f0c7e6dd7a0",
+      "source": "BacSu/01_nguon/viet/dich_nghia/CPO_09_TV04_quyen01_dich_nghia_v01.txt",
+      "source_sha256": "def456",
+      "page": 1,
+      "pdf_page": "",
+      "line": 2,
+      "before": "Ngƣời thƣợng tƣớng [53b]",
+      "after": "Người thượng tướng",
+      "action": "automatic",
+      "rules": "vietnamese_pdf_glyph;vietnamese_pdf_folio;whitespace"
+    }
+  ],
+  "assembled_works": {
+    "CPO_11|han|CPO_11_TV04_bai0024_han_v01": "臣對\n第一名\f詩曰：關關123.",
+    "CPO_09|dich_nghia|CPO_09_TV04_quyen01_dich_nghia_v01": "Người thượng tướng\fCâu hai."
+  }
+}

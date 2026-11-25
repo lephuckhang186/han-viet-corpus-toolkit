@@ -1,0 +1,47 @@
+{
+  "box_valid": [
+    0.1,
+    0.2,
+    0.8,
+    0.9
+  ],
+  "rec1_text_file_content": "Dong 1\nDong 2\n",
+  "rec1_fingerprint": "4647cb9a489385fc9cb44260b5c80e6ecdb6471d0326f8afad28ae5f1f72ca05",
+  "summary_draft": {
+    "han": {
+      "regions": 0,
+      "status": "not_reviewed"
+    },
+    "dich_am": {
+      "regions": 0,
+      "status": "not_reviewed"
+    },
+    "dich_nghia": {
+      "regions": 1,
+      "status": "draft"
+    },
+    "dich_tho": {
+      "regions": 0,
+      "status": "not_reviewed"
+    }
+  },
+  "summary_complete": {
+    "han": {
+      "regions": 0,
+      "status": "not_reviewed"
+    },
+    "dich_am": {
+      "regions": 0,
+      "status": "not_reviewed"
+    },
+    "dich_nghia": {
+      "regions": 1,
+      "status": "complete"
+    },
+    "dich_tho": {
+      "regions": 0,
+      "status": "not_reviewed"
+    }
+  },
+  "sample_region_fingerprint": "eb7503498c567ca8d1680a10bec184c6bef5dacb62fdc5b7a34aee5ba88dc473"
+}

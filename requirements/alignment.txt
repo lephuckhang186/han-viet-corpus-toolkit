@@ -1,0 +1,4 @@
+# Optional embedding-based aligners (Bertalign / Vecalign). Not required for default Lab + CLC alignment.
+-r base.txt
+huggingface_hub
+sentence-transformers

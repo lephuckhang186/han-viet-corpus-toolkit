@@ -1,0 +1,21 @@
+member_id: TV02
+member_number: 2
+topic_code: CV06
+assignments:
+  CPO_09:
+    viet_pages: [[32, 61]]
+    han_pages: [[49, 101]]
+    first_work: doan0001
+    work_range: null
+  CPO_10:
+    pages: [[4, 6], [11, 26]]
+    first_work: hich_tuong_si
+    work_range: null
+  CPO_11:
+    pages: [[188, 365]]
+    first_work: bai0014
+    work_range: [14, 18]
+  CPO_12:
+    pages: [[187, 366]]
+    first_work: bai0131
+    work_range: [131, 207]

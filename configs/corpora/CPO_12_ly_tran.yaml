@@ -1,0 +1,9 @@
+code: CPO_12
+short_name: LYTRAN3
+title: Thơ văn Lý–Trần, tập 3
+default_genre: poetry
+sources:
+  chung:
+    filename: Nguyễn Huệ Chi (chủ biên) - Thơ văn Lý Trần 3.pdf
+    archive_side: chung
+    mode: ocr

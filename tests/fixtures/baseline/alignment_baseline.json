@@ -1,0 +1,352 @@
+{
+  "inputs": {
+    "han_sample": "弟二中\n阮尚賢\n臣対。臣聞明主之求言也，以濟治為急；人臣之學也，以致用為要。\f第一名\n詩曰：關關雎鳩，在河之洲。[MASK]窈窕淑女，君子好逑。",
+    "am_sample": "Đệ nhị trung\nNguyễn Thượng Hiền\nThần đối. Thần văn minh chủ chi cầu ngôn dã, dĩ tế trị vi cấp; nhân thần chi học dã, dĩ trí dụng vi yếu.\fĐệ nhất danh\nThi viết: Quan quan thư cưu, tại hà chi châu. [MASK] Yểu điệu thục nữ, quân tử hảo cầu.",
+    "nghia_sample": "ĐỆ NHỊ GIÁP TIẾN SĨ XUẤT THÂN NGUYỄN THƯỢNG HIỀN\nThần xin thưa. Thần nghe: Bậc minh chủ cầu lời nói, lấy việc giúp trị làm gấp. Kẻ bề tôi chăm việc học, lấy việc trí dụng làm trọng.\fThứ nhất: Kinh Thi nói: Quan quan chim thư cưu trên bãi sông. Thiếu nữ yểu điệu là bạn tốt của quân tử.",
+    "tho_sample": "Cưu kêu trên bãi cát dài,\nThục nữ yểu điệu sánh vai quân tử hiền."
+  },
+  "segmentation": {
+    "han_prose": [
+      {
+        "id": "CPO_11/bai0024/TV04/han/0001",
+        "text": "阮尚賢 臣対。",
+        "start": 4,
+        "end": 11,
+        "part": 1
+      },
+      {
+        "id": "CPO_11/bai0024/TV04/han/0002",
+        "text": "臣聞明主之求言也，以濟治為急；",
+        "start": 11,
+        "end": 26,
+        "part": 1
+      },
+      {
+        "id": "CPO_11/bai0024/TV04/han/0003",
+        "text": "人臣之學也，以致用為要。",
+        "start": 26,
+        "end": 38,
+        "part": 1
+      },
+      {
+        "id": "CPO_11/bai0024/TV04/han/0004",
+        "text": "第一名 詩曰：關關雎鳩，在河之洲。",
+        "start": 39,
+        "end": 56,
+        "part": 2
+      },
+      {
+        "id": "CPO_11/bai0024/TV04/han/0005",
+        "text": "[MASK]窈窕淑女，君子好逑。",
+        "start": 56,
+        "end": 72,
+        "part": 2
+      }
+    ],
+    "han_poetry": [
+      {
+        "id": "CPO_12/bai0314/TV04/han/0001",
+        "text": "弟二中",
+        "start": 0,
+        "end": 3,
+        "part": 1
+      },
+      {
+        "id": "CPO_12/bai0314/TV04/han/0002",
+        "text": "阮尚賢",
+        "start": 4,
+        "end": 7,
+        "part": 1
+      },
+      {
+        "id": "CPO_12/bai0314/TV04/han/0003",
+        "text": "臣対。臣聞明主之求言也，以濟治為急；人臣之學也，以致用為要。",
+        "start": 8,
+        "end": 38,
+        "part": 1
+      },
+      {
+        "id": "CPO_12/bai0314/TV04/han/0004",
+        "text": "第一名",
+        "start": 39,
+        "end": 42,
+        "part": 2
+      },
+      {
+        "id": "CPO_12/bai0314/TV04/han/0005",
+        "text": "詩曰：關關雎鳩，在河之洲。[MASK]窈窕淑女，君子好逑。",
+        "start": 43,
+        "end": 72,
+        "part": 2
+      }
+    ],
+    "han_keep_lines": [
+      {
+        "id": "CPO_09/TV04/muc1/han/0001",
+        "text": "弟二中",
+        "start": 0,
+        "end": 3,
+        "part": 1
+      },
+      {
+        "id": "CPO_09/TV04/muc1/han/0002",
+        "text": "阮尚賢",
+        "start": 4,
+        "end": 7,
+        "part": 1
+      },
+      {
+        "id": "CPO_09/TV04/muc1/han/0003",
+        "text": "臣対。臣聞明主之求言也，以濟治為急；人臣之學也，以致用為要。",
+        "start": 8,
+        "end": 38,
+        "part": 1
+      },
+      {
+        "id": "CPO_09/TV04/muc1/han/0004",
+        "text": "第一名",
+        "start": 39,
+        "end": 42,
+        "part": 2
+      },
+      {
+        "id": "CPO_09/TV04/muc1/han/0005",
+        "text": "詩曰：關關雎鳩，在河之洲。[MASK]窈窕淑女，君子好逑。",
+        "start": 43,
+        "end": 72,
+        "part": 2
+      }
+    ],
+    "am_prose": [
+      {
+        "id": "CPO_11/bai0024/TV04/am/0001",
+        "text": "Nguyễn Thượng Hiền Thần đối.",
+        "start": 13,
+        "end": 41,
+        "part": 1
+      },
+      {
+        "id": "CPO_11/bai0024/TV04/am/0002",
+        "text": "Thần văn minh chủ chi cầu ngôn dã, dĩ tế trị vi cấp; nhân thần chi học dã, dĩ trí dụng vi yếu.",
+        "start": 42,
+        "end": 136,
+        "part": 1
+      },
+      {
+        "id": "CPO_11/bai0024/TV04/am/0003",
+        "text": "Đệ nhất danh Thi viết: Quan quan thư cưu, tại hà chi châu.",
+        "start": 137,
+        "end": 195,
+        "part": 2
+      },
+      {
+        "id": "CPO_11/bai0024/TV04/am/0004",
+        "text": "[MASK] Yểu điệu thục nữ, quân tử hảo cầu.",
+        "start": 196,
+        "end": 237,
+        "part": 2
+      }
+    ],
+    "nghia_prose": [
+      {
+        "id": "CPO_11/bai0024/TV04/nghia/0001",
+        "text": "ĐỆ NHỊ GIÁP TIẾN SĨ XUẤT THÂN NGUYỄN THƯỢNG HIỀN Thần xin thưa.",
+        "start": 0,
+        "end": 63,
+        "part": 1
+      },
+      {
+        "id": "CPO_11/bai0024/TV04/nghia/0002",
+        "text": "Thần nghe: Bậc minh chủ cầu lời nói, lấy việc giúp trị làm gấp.",
+        "start": 64,
+        "end": 127,
+        "part": 1
+      },
+      {
+        "id": "CPO_11/bai0024/TV04/nghia/0003",
+        "text": "Kẻ bề tôi chăm việc học, lấy việc trí dụng làm trọng.",
+        "start": 128,
+        "end": 181,
+        "part": 1
+      },
+      {
+        "id": "CPO_11/bai0024/TV04/nghia/0004",
+        "text": "Thứ nhất: Kinh Thi nói: Quan quan chim thư cưu trên bãi sông.",
+        "start": 182,
+        "end": 243,
+        "part": 2
+      },
+      {
+        "id": "CPO_11/bai0024/TV04/nghia/0005",
+        "text": "Thiếu nữ yểu điệu là bạn tốt của quân tử.",
+        "start": 244,
+        "end": 285,
+        "part": 2
+      }
+    ],
+    "tho_poetry": [
+      {
+        "id": "CPO_12/bai0314/TV04/tho/0001",
+        "text": "Cưu kêu trên bãi cát dài,",
+        "start": 0,
+        "end": 25,
+        "part": 1
+      },
+      {
+        "id": "CPO_12/bai0314/TV04/tho/0002",
+        "text": "Thục nữ yểu điệu sánh vai quân tử hiền.",
+        "start": 26,
+        "end": 65,
+        "part": 1
+      }
+    ]
+  },
+  "dp_phonetic_links": [
+    {
+      "han_ids": [
+        "CPO_11/bai0024/TV04/han/0001"
+      ],
+      "am_ids": [
+        "CPO_11/bai0024/TV04/am/0001"
+      ]
+    },
+    {
+      "han_ids": [
+        "CPO_11/bai0024/TV04/han/0002",
+        "CPO_11/bai0024/TV04/han/0003"
+      ],
+      "am_ids": [
+        "CPO_11/bai0024/TV04/am/0002"
+      ]
+    },
+    {
+      "han_ids": [
+        "CPO_11/bai0024/TV04/han/0004"
+      ],
+      "am_ids": [
+        "CPO_11/bai0024/TV04/am/0003"
+      ]
+    },
+    {
+      "han_ids": [
+        "CPO_11/bai0024/TV04/han/0005"
+      ],
+      "am_ids": [
+        "CPO_11/bai0024/TV04/am/0004"
+      ]
+    }
+  ],
+  "lab_text": {
+    "han": "臣對[MASK]詩曰關關",
+    "am": "Thần đối [MASK] Thi viết Quan quan"
+  },
+  "clc_request": {
+    "han": "阮尚賢 臣対。\n臣聞明主之求言也，以濟治為急；\n人臣之學也，以致用為要。\n第一名 詩曰：關關雎鳩，在河之洲。\n[MASK]窈窕淑女，君子好逑。",
+    "vi": "ĐỆ NHỊ GIÁP TIẾN SĨ XUẤT THÂN NGUYỄN THƯỢNG HIỀN Thần xin thưa.\nThần nghe: Bậc minh chủ cầu lời nói, lấy việc giúp trị làm gấp.\nKẻ bề tôi chăm việc học, lấy việc trí dụng làm trọng.\nThứ nhất: Kinh Thi nói: Quan quan chim thư cưu trên bãi sông.\nThiếu nữ yểu điệu là bạn tốt của quân tử."
+  },
+  "make_rows": [
+    {
+      "han_ids": [
+        "CPO_11/bai0024/TV04/han/0001"
+      ],
+      "cells": [
+        "阮尚賢 臣対。",
+        "Nguyễn Thượng Hiền Thần đối.",
+        "",
+        ""
+      ]
+    },
+    {
+      "han_ids": [
+        "CPO_11/bai0024/TV04/han/0002",
+        "CPO_11/bai0024/TV04/han/0003"
+      ],
+      "cells": [
+        "臣聞明主之求言也，以濟治為急； 人臣之學也，以致用為要。",
+        "Thần văn minh chủ chi cầu ngôn dã, dĩ tế trị vi cấp; nhân thần chi học dã, dĩ trí dụng vi yếu.",
+        "Thần nghe: Bậc minh chủ cầu lời nói, lấy việc giúp trị làm gấp.",
+        ""
+      ]
+    },
+    {
+      "han_ids": [
+        "CPO_11/bai0024/TV04/han/0004"
+      ],
+      "cells": [
+        "第一名 詩曰：關關雎鳩，在河之洲。",
+        "Đệ nhất danh Thi viết: Quan quan thư cưu, tại hà chi châu.",
+        "",
+        ""
+      ]
+    },
+    {
+      "han_ids": [
+        "CPO_11/bai0024/TV04/han/0005"
+      ],
+      "cells": [
+        "[MASK]窈窕淑女，君子好逑。",
+        "[MASK] Yểu điệu thục nữ, quân tử hảo cầu.",
+        "",
+        "Cưu kêu trên bãi cát dài, Thục nữ yểu điệu sánh vai quân tử hiền."
+      ]
+    }
+  ],
+  "unmatched_ids": {
+    "han": [],
+    "am": [],
+    "nghia": [
+      "CPO_11/bai0024/TV04/nghia/0001",
+      "CPO_11/bai0024/TV04/nghia/0003",
+      "CPO_11/bai0024/TV04/nghia/0004",
+      "CPO_11/bai0024/TV04/nghia/0005"
+    ],
+    "tho": []
+  },
+  "real_bai0024_summary": {
+    "work": "CPO_11/bai0024/TV04",
+    "fingerprint": "43a8aa0c4b8f2c651a78d33c034023a7cfde2be84702849371eb74c696209731",
+    "num_han": 279,
+    "num_am": 280,
+    "num_nghia": 248,
+    "rows_count": 126,
+    "first_3_rows": [
+      {
+        "han_ids": [
+          "CPO_11/bai0024/TV04/han/0001",
+          "CPO_11/bai0024/TV04/han/0002",
+          "CPO_11/bai0024/TV04/han/0003",
+          "CPO_11/bai0024/TV04/han/0004"
+        ],
+        "cells": [
+          "弟二中 阮尚賢 河内山朗連㧞 囯卷臣畫有秤臣𤨔光造奉擕攵理肆为",
+          "ĐỆ NHỊ GIÁP TIẾN SĨ XUẤT THÂN NGUYỄN THƯỢNG HIỀN Duyệt quyển: Thần Hoàng Hữu Xứng, thần Bùi Quang Tạo phụng nghĩ văn lý tứ phân. Độc quyển: Thần Đoàn Văn Hội, thần Lương Quy Chính phụng nghĩ văn lý đắc tứ phân.",
+          "ĐỆ NHỊ GIÁP TIẾN SĨ XUẤT THÂN NGUYỄN THƯỢNG HIỀN Duyệt quyển: Thần Hoàng Hữu Xứng, thần Bùi Quang Tạo kính đề nghị văn lý bốn phân.",
+          ""
+        ]
+      },
+      {
+        "han_ids": [
+          "CPO_11/bai0024/TV04/han/0005",
+          "CPO_11/bai0024/TV04/han/0006"
+        ],
+        "cells": [
+          "第一名 工酉恩舒次中播不九名陵卷臣叚攵会臣畀为正奉坊乆理得肆分",
+          "Thần đối. Thần văn: Minh vương chi cầu ngôn dã, dĩ tế trị vi cấp. Nhân thần chi vụ học dã, dĩ trí dụng vi yếu.",
+          "Độc quyển: Thần Đoàn Văn Hội, thần Lương Quý Chính kính đề nghị văn lý bốn phân.",
+          ""
+        ]
+      },
+      {
+        "han_ids": [
+          "CPO_11/bai0024/TV04/han/0007"
+        ],
+        "cells": [
+          "臣対臣闻明主之求言也以濟後為急人之福学也以致用為要言不",
+          "Ngôn bất khả dĩ thố vu trị, vị chi hư ngôn. Học bất khả dĩ kiến chư dụng, vị chi tục học.",
+          "Thần xin thưa. Thần nghe: Bậc minh chủ cầu lời nói, lấy việc giúp trị làm gấp.",
+          ""
+        ]
+      }
+    ]
+  }
+}

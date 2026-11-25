@@ -1,0 +1,5 @@
+default_genre: poetry
+preserve_protected_logic: true
+han_prose_marks: "。！？；"
+viet_prose_abbreviations: ["TS", "GS", "PGS", "ThS", "TP", "Q", "tr", "vd"]
+bac_su_han_keep_lines: true

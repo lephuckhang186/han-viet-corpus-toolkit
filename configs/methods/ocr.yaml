@@ -1,0 +1,52 @@
+han:
+  primary_engine: paddleocr
+  secondary_engine: clc_ocr
+  paddle:
+    inference_engine: transformers
+    detection_model: PP-OCRv6_medium_det
+    recognition_model: PP-OCRv6_medium_rec
+    batch_size: 1
+    rec_score_threshold: 0.0
+    detection_max_side: 2048
+    layouts:
+      thi_dinh_han: vertical_rtl
+      ly_tran_han: horizontal_ltr
+      bac_su_han: vertical_rtl
+  clc_ocr:
+    base_url: https://kimhannom.fit.hcmus.edu.vn/api/web/clc-sinonom/
+    api_key_env: CLC_OCR_API_KEY
+    timeout_connect: 10
+    timeout_read: 60
+    max_retries: 2
+    backoff_seconds: 2.0
+    min_delay_seconds: 3.0
+    default_options:
+      ocr_id: 1
+      lang_type: 1
+      reading_direction: 1
+      epitaph: 0
+      tag: null
+
+viet:
+  primary_engine: tesseract
+  secondary_engine: vietocr
+  tesseract:
+    lang: vie
+    psm: 6
+    oem: 3
+  vietocr:
+    model_name: vgg_transformer
+    config_revision: fe8c3a7fc714aec57ab81cec844eb3adf0c1636c
+    max_width: 512
+    max_length: 256
+    crop_padding: 2
+    reading_order: top_to_bottom
+    detection_model: PP-OCRv6_medium_det
+    detection_box_threshold: 0.60
+    detection_unclip_ratio: 1.50
+    detection_max_side: 2048
+
+cross_check:
+  normalize_nfc_on_copy: true
+  require_bbox_for_geometry_match: true
+  use_confidence_as_winner: false

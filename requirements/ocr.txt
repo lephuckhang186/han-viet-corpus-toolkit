@@ -1,0 +1,13 @@
+# OCR dependencies (install only in OCR environment; requires system Tesseract binary + 'vie' traineddata for Vietnamese primary OCR)
+-r base.txt
+pytesseract
+tqdm
+# Han OCR & Line Detection (verified notebook pins for Colab/Kaggle GPU environments: paddleocr==3.7.0, paddlex[ocr-core]==3.7.2, transformers==5.23.0)
+# Note: install paddleocr/paddlex/transformers/torch matching your local/Colab/Kaggle CUDA stack.
+paddleocr
+paddlex
+transformers
+# VietOCR secondary engine (see notebooks/README.md for --no-deps install on Kaggle/Colab to preserve Pillow 13)
+einops>=0.8,<0.9
+gdown>=5.2,<6
+vietocr==0.3.13

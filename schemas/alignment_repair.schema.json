@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "hanviet.alignment_repair.v1",
+  "title": "LLM Alignment Verification and Repair Proposals",
+  "type": "object",
+  "required": ["work", "fingerprint", "findings", "proposals"],
+  "properties": {
+    "work": {"type": "string", "minLength": 1},
+    "fingerprint": {"type": "string", "minLength": 1},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["target_kind", "formal_error", "diagnostic_labels", "han_ids", "target_ids", "reason"],
+        "properties": {
+          "target_kind": {"type": "string", "enum": ["am", "nghia", "tho", "all"]},
+          "formal_error": {"type": "string", "enum": ["NONE", "OMISSION", "ADDITION", "MISSING"]},
+          "diagnostic_labels": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "WRONG_ALIGNMENT",
+                "BOUNDARY_ERROR",
+                "OCR_ERROR",
+                "ENTITY_MISMATCH",
+                "NUMBER_MISMATCH",
+                "DUPLICATION",
+                "ORDER_ERROR"
+              ]
+            }
+          },
+          "han_ids": {"type": "array", "items": {"type": "string"}},
+          "target_ids": {"type": "array", "items": {"type": "string"}},
+          "missing_reason": {"type": ["string", "null"]},
+          "reason": {"type": "string"}
+        }
+      }
+    },
+    "proposals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["proposal_id", "target_kind", "operation", "han_ids", "target_ids", "reason", "status"],
+        "properties": {
+          "proposal_id": {"type": "string", "minLength": 1},
+          "target_kind": {"type": "string", "enum": ["am", "nghia", "tho"]},
+          "operation": {
+            "type": "string",
+            "enum": [
+              "KEEP",
+              "MERGE",
+              "SPLIT",
+              "RELINK",
+              "ADD_LINK",
+              "REMOVE_LINK",
+              "FLAG_OCR",
+              "FLAG_CLEANING",
+              "REQUEST_REVIEW"
+            ]
+          },
+          "han_ids": {"type": "array", "items": {"type": "string"}},
+          "target_ids": {"type": "array", "items": {"type": "string"}},
+          "replacement_links": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["han_ids", "target_ids"],
+              "properties": {
+                "han_ids": {"type": "array", "items": {"type": "string"}},
+                "target_ids": {"type": "array", "items": {"type": "string"}}
+              }
+            }
+          },
+          "requires_earlier_stage": {"type": ["string", "null"]},
+          "reason": {"type": "string"},
+          "status": {"type": "string", "enum": ["PROPOSED", "NEEDS_REVIEW"]}
+        }
+      }
+    }
+  }
+}

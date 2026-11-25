@@ -1,0 +1,18 @@
+code: CPO_09
+short_name: BACSU
+title: Bắc sứ thông lục
+default_genre: prose
+sources:
+  viet:
+    filename: bắc sứ thông lục/Bắc Sứ Thông Lục.pdf
+    archive_side: viet
+    mode: native_text
+  han:
+    filename: bắc sứ thông lục/BắcSứThôngLục_北使通錄(Q1_4).pdf
+    archive_side: han
+    mode: ocr
+milestones:
+  loi_tua: [9, 2]
+  loi_de_tu: [11, 4]
+  quyen_1: [13, 7]
+  quyen_4: [93, 55]

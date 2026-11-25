@@ -1,0 +1,12 @@
+project:
+  root: null
+  data_root: data
+  output_root: san_pham
+  resources_root: resources
+  dict_root: dict
+  cache_root: null
+
+runtime:
+  environment: auto
+  device: auto
+  encoding: utf-8
