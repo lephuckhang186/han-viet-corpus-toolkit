@@ -41,6 +41,166 @@ def compute_cer_wer(
     }
 
 
+def compute_han_ocr_evaluation(
+    cross_check_report: dict[str, Any],
+    manual_result: dict[str, Any] | None = None,
+    *,
+    gold_references: list[str] | None = None,
+    gold_disagreement_flags: list[bool] | None = None,
+    processing_seconds: float | None = None,
+    manual_review_seconds: float | None = None,
+) -> dict[str, Any]:
+    """Comprehensive Task 17 evaluation separating CER vs gold, agreement rate, coverage, detection P/R, and manual fixing."""
+    items = cross_check_report.get("items", [])
+    summary = cross_check_report.get("summary", {})
+    strict_agreements: list[float] = []
+    content_agreements: list[float] = []
+    both_empty_count = 0
+
+    for item in items:
+        p_txt = (item.get("primary") or {}).get("text", "")
+        s_txt = (item.get("secondary") or {}).get("text", "")
+        if item.get("primary") and item.get("secondary") and not p_txt and not s_txt:
+            both_empty_count += 1
+        comp = item.get("comparison") or {}
+        if "agreement_rate" in comp:
+            strict_agreements.append(float(comp["agreement_rate"]))
+            cc = comp.get("content_comparison") or {}
+            if "agreement_rate" in cc:
+                content_agreements.append(float(cc["agreement_rate"]))
+
+    pages = {(it.get("primary") or it.get("secondary") or {}).get("pdf_page") for it in items}
+    pages.discard(None)
+    p_count = sum(1 for it in items if it.get("primary") is not None)
+    s_count = sum(1 for it in items if it.get("secondary") is not None)
+
+    recs = (manual_result or {}).get("records", [])
+    decision_counts: dict[str, int] = {}
+    for r in recs:
+        dec = str(r.get("decision") or "DEFER")
+        decision_counts[dec] = decision_counts.get(dec, 0) + 1
+
+    mask_count = sum((r.get("final_text") or "").count("[MASK]") for r in recs)
+    reviewed_count = (manual_result or {}).get("reviewed_count", 0)
+    total_items = len(items)
+
+    # Gold CER/WER (micro & macro) + false agreement rate (primary == secondary != gold)
+    cer_block: dict[str, Any] = {"status": "CER_NOT_AVAILABLE", "micro_cer": None, "macro_cer": None}
+    false_agreement: dict[str, Any] = {"gold_available": False, "false_agreement_rate": None, "count": None}
+    detection_metrics: dict[str, Any] = {"unit": "region", "gold_available": False, "precision": None, "recall": None}
+
+    if gold_references is not None:
+        if len(gold_references) != total_items:
+            raise ValueError("gold_references must match cross_check_report items length.")
+        p_preds = [(it.get("primary") or {}).get("text", "") for it in items]
+        s_preds = [(it.get("secondary") or {}).get("text", "") for it in items]
+        p_micro = compute_cer_wer(p_preds, gold_references)
+        s_micro = compute_cer_wer(s_preds, gold_references)
+
+        def _macro(preds: list[str], refs: list[str]) -> float | None:
+            per = []
+            for pred, ref in zip(preds, refs):
+                if ref:
+                    edits = sum(1 for o in levenshtein_align(list(ref), list(pred)) if o["op"] != "equal")
+                    per.append(edits / len(ref))
+            return round(sum(per) / len(per), 6) if per else None
+
+        corr_cer = None
+        if manual_result is not None and len(recs) == total_items:
+            c_preds = [r.get("final_text") or "" for r in recs]
+            corr_micro = compute_cer_wer(c_preds, gold_references)
+            corr_cer = {"micro_cer": corr_micro["cer"], "macro_cer": _macro(c_preds, gold_references)}
+
+        cer_block = {
+            "status": "COMPUTED_AGAINST_GOLD",
+            "primary_micro_cer": p_micro["cer"],
+            "primary_macro_cer": _macro(p_preds, gold_references),
+            "secondary_micro_cer": s_micro["cer"],
+            "secondary_macro_cer": _macro(s_preds, gold_references),
+            "corrected": corr_cer,
+        }
+
+        agreed_items = [
+            (it, g) for it, g in zip(items, gold_references) if it.get("status") == "AGREED_UNVERIFIED"
+        ]
+        if agreed_items:
+            false_cnt = sum(1 for it, g in agreed_items if (it.get("primary") or {}).get("text", "") != g)
+            false_agreement = {
+                "gold_available": True,
+                "agreed_checked": len(agreed_items),
+                "count": false_cnt,
+                "false_agreement_rate": round(false_cnt / len(agreed_items), 6),
+            }
+
+        # Region-level error detection P/R using explicit gold error flags if supplied, or gold != primary
+        actual_errors = (
+            gold_disagreement_flags
+            if gold_disagreement_flags is not None
+            else [((it.get("primary") or {}).get("text", "") != g or (it.get("secondary") or {}).get("text", "") != g) for it, g in zip(items, gold_references)]
+        )
+        flagged = [it.get("status") != "AGREED_UNVERIFIED" for it in items]
+        tp = sum(1 for fl, ac in zip(flagged, actual_errors) if fl and ac)
+        fp = sum(1 for fl, ac in zip(flagged, actual_errors) if fl and not ac)
+        fn = sum(1 for fl, ac in zip(flagged, actual_errors) if not fl and ac)
+        prec = tp / (tp + fp) if (tp + fp) else 0.0
+        rec = tp / (tp + fn) if (tp + fn) else 0.0
+        detection_metrics = {
+            "unit": "region",
+            "gold_available": True,
+            "tp": tp,
+            "fp": fp,
+            "fn": fn,
+            "precision": round(prec, 6),
+            "recall": round(rec, 6),
+        }
+
+    return {
+        "cross_check_status": cross_check_report.get("status"),
+        "agreement": {
+            "note": "Agreement rate measures inter-engine consistency, NOT OCR accuracy.",
+            "strict_mean": round(sum(strict_agreements) / len(strict_agreements), 6) if strict_agreements else None,
+            "content_mean": round(sum(content_agreements) / len(content_agreements), 6) if content_agreements else None,
+            "both_empty_regions": both_empty_count,
+        },
+        "coverage": {
+            "pages_selected": len(pages),
+            "total_items": total_items,
+            "primary_items": p_count,
+            "secondary_items": s_count,
+            "matched_agreed_unverified": summary.get("agreed_unverified", 0),
+            "disagreements": summary.get("disagreements", 0),
+            "incomplete_items": summary.get("incomplete", 0),
+            "missing_regions": sum(1 for it in items if it.get("status") == "MISSING_REGION"),
+        },
+        "cer": cer_block,
+        "false_agreement": false_agreement,
+        "error_detection": detection_metrics,
+        "manual_fixing": {
+            "available": manual_result is not None,
+            "review_status": (manual_result or {}).get("review_status", "PENDING"),
+            "reviewed_count": reviewed_count,
+            "deferred_count": (manual_result or {}).get("deferred_count", total_items),
+            "completion_rate": round(reviewed_count / total_items, 6) if total_items else 0.0,
+            "decision_counts": decision_counts,
+            "mask_count": mask_count,
+            "manual_review_seconds": manual_review_seconds,
+        },
+        "processing_seconds": processing_seconds if processing_seconds is not None else cross_check_report.get("processing_seconds"),
+    }
+
+
+def experiment_matrix_template() -> list[dict[str, Any]]:
+    """Return structured H01-H06 experiment matrix without fabricated metrics."""
+    return [
+        {"experiment_id": "H01", "method": "PaddleOCR on original image", "metrics": ["CER_micro", "CER_macro", "coverage"], "status": "NOT_RUN"},
+        {"experiment_id": "H02", "method": "PaddleOCR with Bac Su / Han preprocessing", "metrics": ["CER_micro", "CER_macro", "coverage"], "status": "NOT_RUN"},
+        {"experiment_id": "H03", "method": "CLC OCR on original image", "metrics": ["CER_micro", "CER_macro", "coverage"], "status": "NOT_RUN"},
+        {"experiment_id": "H04", "method": "CLC OCR with preprocessing (if service supports)", "metrics": ["CER_micro", "CER_macro"], "status": "NOT_RUN"},
+        {"experiment_id": "H05", "method": "PaddleOCR + CLC OCR cross-check", "metrics": ["strict_agreement", "content_agreement", "detection_precision", "detection_recall", "false_agreement_rate", "unmatched_regions"], "status": "NOT_RUN"},
+        {"experiment_id": "H06", "method": "Cross-check-assisted manual fixing", "metrics": ["corrected_CER", "manual_time_sec", "completion_rate", "mask_count"], "status": "NOT_RUN"},
+    ]
+
+
 def compute_alignment_eval(
     predicted_pairs: list[tuple[tuple[str, ...], tuple[str, ...]]],
     gold_pairs: list[tuple[tuple[str, ...], tuple[str, ...]]],

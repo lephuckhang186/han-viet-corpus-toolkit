@@ -1,13 +1,21 @@
 """Primary Han OCR engine adapter using PaddleOCR (PP-OCRv6 / vertical_rtl & horizontal_ltr)."""
 from __future__ import annotations
 
+from contextlib import nullcontext
 import json
 import math
 from pathlib import Path
+import tempfile
+import time
 from typing import Any
 
-from hanviet.common.io import sha256
-from hanviet.extraction.preprocessing.han_preprocess import horizontal_han_rows, text_order
+from hanviet.common.io import sha256, write_json
+from hanviet.extraction.preprocessing.han_preprocess import (
+    BAC_MAIN_PREPROCESS_PARAMS_DEFAULT,
+    bac_su_preprocess,
+    horizontal_han_rows,
+    text_order,
+)
 from hanviet.extraction.schema import OCRRecord, make_ocr_record_id
 
 
@@ -95,25 +103,41 @@ class PaddleHanEngine:
         pdf_page: int | None = None,
         reading_order_mode: str = "vertical_rtl",
         column_center_ratio: float = 0.45,
+        order_indices: list[int] | None = None,
+        layout: str | None = None,
+        coordinate_space: str = "source_image_pixels",
         preprocess_transform: dict[str, Any] | None = None,
+        original_image_sha256: str | None = None,
+        processed_image_sha256: str | None = None,
+        run_id: str | None = None,
+        processing_time: float | None = None,
     ) -> list[OCRRecord]:
-        """Normalize raw PaddleOCR JSON dict into Shared OCRRecord entries."""
+        """Normalize raw PaddleOCR JSON dict into Shared OCRRecord entries without dropping rare/low-conf Han text."""
         data = raw.get("res", raw)
         texts = data.get("rec_texts", [])
         scores = data.get("rec_scores", [None] * len(texts))
         polys = data.get("rec_polys", [None] * len(texts))
         if len(texts) != len(scores):
             raise ValueError("rec_texts and rec_scores length mismatch.")
-        order = text_order(
-            {"rec_texts": texts, "rec_polys": polys if all(p is not None for p in polys) else None},
-            reading_order_mode if all(p is not None for p in polys) else "model",
-            column_center_ratio=column_center_ratio,
-        )
+
+        if order_indices is not None:
+            if sorted(order_indices) != list(range(len(texts))):
+                raise ValueError(
+                    f"order_indices must be a permutation of 0..{len(texts) - 1}, got {order_indices!r}."
+                )
+            order = list(order_indices)
+        else:
+            order = text_order(
+                {"rec_texts": texts, "rec_polys": polys if all(p is not None for p in polys) else None},
+                reading_order_mode if all(p is not None for p in polys) else "model",
+                column_center_ratio=column_center_ratio,
+            )
+
         records: list[OCRRecord] = []
         for rank, idx in enumerate(order, 1):
             score_raw = scores[idx]
             conf = float(score_raw) if score_raw is not None and math.isfinite(float(score_raw)) else None
-            bbox = polys[idx] if idx < len(polys) and polys[idx] is not None else None
+            poly = polys[idx] if idx < len(polys) and polys[idx] is not None else None
             text = str(texts[idx])
             records.append(
                 OCRRecord(
@@ -129,12 +153,18 @@ class PaddleHanEngine:
                     engine=self.name,
                     model_version=self.model_version,
                     text=text,
-                    bbox=bbox,
+                    bbox=poly,
+                    polygon=poly,
                     confidence=conf,
+                    layout=layout or reading_order_mode,
                     image_reference=image_reference,
                     input_sha256=input_sha256,
+                    original_image_sha256=original_image_sha256 or input_sha256,
+                    processed_image_sha256=processed_image_sha256,
+                    run_id=run_id,
+                    processing_time=processing_time,
                     status="OK" if text.strip() else "EMPTY",
-                    coordinate_space="source_image_pixels",
+                    coordinate_space=coordinate_space if poly is not None else None,
                     preprocess_transform=preprocess_transform,
                 )
             )
@@ -152,67 +182,98 @@ class PaddleHanEngine:
         pdf_page: int | None = None,
         layout: str = "vertical_rtl",
         reading_order_mode: str | None = None,
+        column_center_ratio: float = 0.45,
+        order_indices: list[int] | None = None,
         row_settings: dict[str, Any] | None = None,
         manual_boxes: list[list[int]] | None = None,
+        preprocess_variant: str | None = None,
+        preprocess_params: dict[str, Any] | None = None,
+        processed_image_path: Path | None = None,
         preprocess_transform: dict[str, Any] | None = None,
         raw_output_path: Path | None = None,
+        run_id: str | None = None,
     ) -> list[OCRRecord]:
+        t0 = time.perf_counter()
         image_path = Path(image_path)
-        digest = sha256(image_path)
+        orig_digest = sha256(image_path)
+        transform_meta = dict(preprocess_transform) if preprocess_transform else None
+        coord_space = "source_image_pixels"
+        use_pre = bool(preprocess_variant and preprocess_variant != "original")
 
-        if layout == "horizontal_ltr":
-            import tempfile  # noqa: PLC0415
-            from PIL import Image  # noqa: PLC0415
+        tmp_ctx = tempfile.TemporaryDirectory(prefix="han_pre_") if (use_pre and processed_image_path is None) else nullcontext()
+        with tmp_ctx as tmp_pre_dir:
+            target_path = image_path
+            proc_digest = orig_digest
+            if use_pre:
+                from PIL import Image  # noqa: PLC0415
 
-            recognizer = self._ensure_row_recognizer()
-            with Image.open(image_path) as orig:
-                rgb = orig.convert("RGB")
-            boxes, detection_meta = horizontal_han_rows(rgb, row_settings, manual_boxes)
-            texts, scores, polys = [], [], []
-            with tempfile.TemporaryDirectory(prefix="han_rows_") as tmpdir:
-                for idx, box in enumerate(boxes):
-                    crop = rgb.crop(box)
-                    tmp_file = Path(tmpdir) / f"row_{idx:04d}.png"
-                    crop.save(tmp_file, format="PNG", compress_level=0)
-                    preds = list(recognizer.predict(input=str(tmp_file), batch_size=self.batch_size))
-                    if len(preds) != 1:
-                        raise ValueError("Horizontal Han row recognition must return 1 item per row.")
-                    raw_item = preds[0].json if hasattr(preds[0], "json") else preds[0]
-                    raw_item = json.loads(raw_item) if isinstance(raw_item, str) else raw_item
-                    res = raw_item.get("res", raw_item)
-                    texts.append(res["rec_text"])
-                    scores.append(res.get("rec_score"))
-                    x1, y1, x2, y2 = box
-                    polys.append([[x1, y1], [x2, y1], [x2, y2], [x1, y2]])
-            raw_payload: dict[str, Any] = {
-                "res": {
-                    "pipeline": "paddle_han_horizontal_rows",
-                    "rec_texts": texts,
-                    "rec_scores": scores,
-                    "rec_polys": polys,
-                    "row_detection": detection_meta,
-                }
-            }
-            order_mode = reading_order_mode or "top_to_bottom"
-        else:
-            ocr = self._ensure_column_ocr()
-            preds = list(
-                ocr.predict(
-                    input=str(image_path),
-                    text_rec_score_thresh=self.rec_score_threshold,
-                    text_det_limit_side_len=self.detection_max_side,
-                    text_det_limit_type="max",
+                with Image.open(image_path) as orig:
+                    variants, stats = bac_su_preprocess(orig, preprocess_params or BAC_MAIN_PREPROCESS_PARAMS_DEFAULT)
+                if preprocess_variant not in variants:
+                    raise ValueError(f"Unsupported preprocess_variant: {preprocess_variant!r}")
+                transform_meta = {"variant": preprocess_variant, "stats": stats}
+                coord_space = "processed_image_pixels"
+                out_img = (
+                    Path(processed_image_path)
+                    if processed_image_path is not None
+                    else Path(str(tmp_pre_dir)) / f"{image_path.stem}.{preprocess_variant}.png"
                 )
-            )
-            if len(preds) != 1:
-                raise ValueError("Expected single prediction result per image.")
-            raw_payload = preds[0].json if hasattr(preds[0], "json") else preds[0]
-            raw_payload = json.loads(raw_payload) if isinstance(raw_payload, str) else raw_payload
-            order_mode = reading_order_mode or "vertical_rtl"
+                out_img.parent.mkdir(parents=True, exist_ok=True)
+                variants[preprocess_variant].save(out_img, format="PNG")
+                target_path = out_img
+                proc_digest = sha256(out_img)
 
+            if layout == "horizontal_ltr":
+                from PIL import Image  # noqa: PLC0415
+
+                recognizer = self._ensure_row_recognizer()
+                with Image.open(target_path) as orig:
+                    rgb = orig.convert("RGB")
+                boxes, detection_meta = horizontal_han_rows(rgb, row_settings, manual_boxes)
+                texts, scores, polys = [], [], []
+                with tempfile.TemporaryDirectory(prefix="han_rows_") as tmpdir:
+                    for idx, box in enumerate(boxes):
+                        crop = rgb.crop(box)
+                        tmp_file = Path(tmpdir) / f"row_{idx:04d}.png"
+                        crop.save(tmp_file, format="PNG", compress_level=0)
+                        preds = list(recognizer.predict(input=str(tmp_file), batch_size=self.batch_size))
+                        if len(preds) != 1:
+                            raise ValueError("Horizontal Han row recognition must return 1 item per row.")
+                        raw_item = preds[0].json if hasattr(preds[0], "json") else preds[0]
+                        raw_item = json.loads(raw_item) if isinstance(raw_item, str) else raw_item
+                        res = raw_item.get("res", raw_item)
+                        texts.append(res["rec_text"])
+                        scores.append(res.get("rec_score"))
+                        x1, y1, x2, y2 = box
+                        polys.append([[x1, y1], [x2, y1], [x2, y2], [x1, y2]])
+                raw_payload: dict[str, Any] = {
+                    "res": {
+                        "pipeline": "paddle_han_horizontal_rows",
+                        "rec_texts": texts,
+                        "rec_scores": scores,
+                        "rec_polys": polys,
+                        "row_detection": detection_meta,
+                    }
+                }
+                order_mode = reading_order_mode or "top_to_bottom"
+            else:
+                ocr = self._ensure_column_ocr()
+                preds = list(
+                    ocr.predict(
+                        input=str(target_path),
+                        text_rec_score_thresh=self.rec_score_threshold,
+                        text_det_limit_side_len=self.detection_max_side,
+                        text_det_limit_type="max",
+                    )
+                )
+                if len(preds) != 1:
+                    raise ValueError("Expected single prediction result per image.")
+                raw_payload = preds[0].json if hasattr(preds[0], "json") else preds[0]
+                raw_payload = json.loads(raw_payload) if isinstance(raw_payload, str) else raw_payload
+                order_mode = reading_order_mode or "vertical_rtl"
+
+        elapsed = round(time.perf_counter() - t0, 4)
         if raw_output_path is not None:
-            from hanviet.common.io import write_json  # noqa: PLC0415
-
             write_json(raw_output_path, raw_payload)
 
         return self.parse_raw_prediction(
@@ -223,8 +284,16 @@ class PaddleHanEngine:
             member_id=member_id,
             variant=variant,
             image_reference=str(image_path),
-            input_sha256=digest,
+            input_sha256=orig_digest,
             pdf_page=pdf_page,
             reading_order_mode=order_mode,
-            preprocess_transform=preprocess_transform,
+            column_center_ratio=column_center_ratio,
+            order_indices=order_indices,
+            layout=layout,
+            coordinate_space=coord_space,
+            preprocess_transform=transform_meta,
+            original_image_sha256=orig_digest,
+            processed_image_sha256=proc_digest,
+            run_id=run_id,
+            processing_time=elapsed,
         )

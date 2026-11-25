@@ -13,11 +13,7 @@ if str(SRC) not in sys.path:
 from hanviet.common.io import read_json, write_json
 from hanviet.common.manifests import stage_manifest_payload, write_stage_manifest
 from hanviet.extraction.cross_check.aligner import cross_check_records
-from hanviet.extraction.manual_review.reviewer import (
-    build_ocr_review_table,
-    export_ocr_review_csv,
-    render_ocr_diff_html,
-)
+from hanviet.extraction.exporter import export_cross_check_bundle
 from hanviet.extraction.schema import OCRRecord
 
 
@@ -33,19 +29,22 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--secondary", type=Path, help="Secondary OCR records JSON (CLC OCR or VietOCR).")
     parser.add_argument("--variant", required=True, choices=["han", "dich_am", "dich_nghia", "dich_tho"])
     parser.add_argument("--output-dir", required=True, type=Path, help="Destination cross_check directory.")
+    parser.add_argument("--dp-line-match", action="store_true", help="Enable DP grouped-line matching (1-1, 1-n, n-1).")
     args = parser.parse_args(argv)
 
     primary = _load_records(args.primary)
     secondary = _load_records(args.secondary) if args.secondary and args.secondary.is_file() else []
-    report = cross_check_records(primary, secondary, variant=args.variant)
+    report = cross_check_records(
+        primary,
+        secondary,
+        variant=args.variant,
+        use_dp_line_match=args.dp_line_match,
+    )
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     report_path = args.output_dir / "cross_check.json"
     write_json(report_path, report)
-    rows = build_ocr_review_table(report)
-    if rows:
-        export_ocr_review_csv(args.output_dir / "cross_check_review.csv", rows)
-    (args.output_dir / "cross_check_diff.html").write_text(render_ocr_diff_html(report), encoding="utf-8")
+    export_cross_check_bundle(args.output_dir, report)
 
     manifest = stage_manifest_payload(
         stage="02_ocr_cross_check",

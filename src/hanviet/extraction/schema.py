@@ -29,6 +29,14 @@ class OCRRecord:
     status: str = "OK"
     coordinate_space: str | None = "source_image_pixels"
     preprocess_transform: dict[str, Any] | None = None
+    schema_version: str = "1.0"
+    polygon: list[Any] | None = None
+    layout: str | None = None
+    original_image_sha256: str | None = None
+    processed_image_sha256: str | None = None
+    run_id: str | None = None
+    request_id: str | None = None
+    processing_time: float | None = None
     extra: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:

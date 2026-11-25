@@ -1,3 +1,297 @@
+# Hướng dẫn sử dụng Notebooks & Quy trình thực hành (`han-viet-corpus-toolkit`)
+
+Tài liệu này tập hợp toàn bộ hướng dẫn vận hành notebook, quy trình cắt nguồn – OCR – làm sạch – dóng hàng, cũng như các prompt kiểm tra thủ công phục vụ thành viên thực hiện trực tiếp trên máy cá nhân, Kaggle và Google Colab.
+
+> Nếu bạn đang tìm tài liệu **giới thiệu tổng quan codebase, kiến trúc module `src/hanviet/` và hướng dẫn cài đặt/CLI**, hãy xem [README.md ở thư mục gốc](../README.md).
+
+## Mục lục
+
+1. [Danh sách Notebooks theo giai đoạn](#danh-sách-notebooks-theo-giai-đoạn)
+2. [Chuẩn bị và dóng hàng ngữ liệu Hán–Việt (Quy trình từ TXT đến tệp nộp)](#chuẩn-bị-và-dóng-hàng-ngữ-liệu-hánviệt)
+3. [Hai prompt Codex cho dóng hàng & truy vết](#hai-prompt-codex)
+4. [Cắt nguồn trên máy local (`01_source_preparation.ipynb`) & Bố cục dữ liệu](#chạy-ngay)
+5. [OCR trên Kaggle / Google Colab (`02_ocr/OCR_viet.ipynb` & `OCR_han.ipynb`)](#ocr-trên-kaggle--google-colab)
+6. [Làm sạch văn bản & Kiểm tra thủ công với LLM (`clean_text.ipynb` / `03_text_cleaning.ipynb`)](#làm-sạch-văn-bản-clean_textipynb--03_text_cleaningipynb-và-kiểm-tra-thủ-công-với-llm)
+7. [Phụ lục: Các prompt tham khảo](#phụ-lục-các-prompt-tham-khảo)
+
+---
+
+## Danh sách Notebooks theo giai đoạn
+
+| Giai đoạn | Notebook mô-đun mới | Notebook legacy / thực hành | Mục đích |
+|---|---|---|---|
+| 01. Chuẩn bị nguồn | [01_source_preparation.ipynb](01_source_preparation.ipynb) | Mỗi tác phẩm 1 cell, tự nhập số trang, chế độ GUI/CLI tích hợp | Kiểm tra phạm vi, hash nguồn, vùng cắt |
+| 02. OCR & Đối chiếu chéo | [02_ocr/OCR_han.ipynb](02_ocr/OCR_han.ipynb) (xem [02_ocr/README.md](02_ocr/README.md)) | [02_ocr/OCR_viet.ipynb](02_ocr/OCR_viet.ipynb) | OCR Hán (PaddleOCR + CLC + Cross-check + Manual Fixing) và OCR Việt |
+| 03. Làm sạch văn bản | [03_text_cleaning.ipynb](03_text_cleaning.ipynb) | [clean_text.ipynb](clean_text.ipynb) | Làm sạch rule-based, xuất `duyet_lam_sach.csv`, rà soát thủ công |
+| 04. Tách đơn vị câu | [04_text_segmentation.ipynb](04_text_segmentation.ipynb) | [dong_hang.ipynb](dong_hang.ipynb) | Tách câu văn xuôi / dòng thơ & tính offset UTF-8 |
+| 05. Dóng hàng & Xuất bảng | [05_text_alignment.ipynb](05_text_alignment.ipynb) | [dong_hang.ipynb](dong_hang.ipynb) | Lab DP, CLC API, Bertalign/Vecalign tùy chọn, xuất TSV/XLSX 4 cột |
+| 06. Hậu kiểm dóng hàng LLM | [06_llm_alignment_review.ipynb](06_llm_alignment_review.ipynb) | Prompt Codex ở mục 3 | Kiểm tra & đề xuất sửa `draft.json` có kiểm chứng schema |
+| 07. Đánh giá ngữ liệu | [07_evaluation.ipynb](07_evaluation.ipynb) | — | Thống kê chỉ số đánh giá & xuất báo cáo JSON/Markdown |
+
+---
+
+## Chuẩn bị và dóng hàng ngữ liệu Hán–Việt
+
+Repo đi từ cắt nguồn, OCR và làm sạch TXT đến dóng hàng theo từng tác phẩm hoặc mục. Kết quả xuất giữ bốn cột **Hán – Dịch âm – Dịch nghĩa – Dịch thơ** theo yêu cầu trong [CONTEXT.md](../CONTEXT.md). Mỗi bản văn giữ nguyên nội dung theo nguồn đã đối chiếu.
+
+- Có bảng Excel/TSV rồi → xem [Xuất tệp nộp](#xuất-tệp-nộp) để biết tệp nào cần dùng.
+- Có TXT sạch → bắt đầu ở [Bước 6. Tách đơn vị và tạo bản nháp](#bước-6-tách-đơn-vị-và-tạo-bản-nháp).
+- Có `poetry_prompt.json` hoặc CLC báo lệch → dùng [Prompt 1](#prompt-1-ghép-thơ-và-rà-lỗi-clc).
+- Cần tra ảnh gốc, sửa TXT rồi chạy lại → dùng [Prompt 2](#prompt-2-truy-vết-sửa-txt-sạch-và-dóng-lại).
+- Mới có PDF → bắt đầu ở [Bước 3. Cắt nguồn](#bước-3-cắt-nguồn).
+
+### Sử dụng notebook từ TXT đến tệp nộp
+
+| Bước | Notebook hoặc công cụ | Kết quả |
+|---|---|---|
+| 1. Xác nhận đề tài và phạm vi | `../phancong.md` và [ten_file.py](../ten_file.py) | Mã đề tài, mã sách, quyển/bài và khoảng trang được giao |
+| 2. Kiểm kê nguồn | Bảng kiểm kê của nhóm và thư mục `data/` | Danh sách tài liệu, bản văn, dạng nguồn và phạm vi |
+| 3. Cắt nguồn | [01_source_preparation.ipynb](01_source_preparation.ipynb) trên máy local | Ảnh vùng cắt hoặc TXT thô trong `01_nguon/` |
+| 4. OCR PDF scan | [02_ocr/OCR_viet.ipynb](02_ocr/OCR_viet.ipynb) & [02_ocr/OCR_han.ipynb](02_ocr/OCR_han.ipynb) | TXT, JSON và metadata OCR theo từng ảnh trong `02_ocr_tho/` |
+| 5. Làm sạch | [clean_text.ipynb](clean_text.ipynb) hoặc [03_text_cleaning.ipynb](03_text_cleaning.ipynb) trên máy local | TXT theo bài và bản văn trong `03_text_sach/`, kèm manifest truy vết |
+| 6. Tách đơn vị | [dong_hang.ipynb](dong_hang.ipynb), chế độ `nhap` | Đơn vị Hán, âm, nghĩa và thơ trong `draft.json` |
+| 7. Dóng hàng và duyệt | Cùng lượt `nhap` trong [dong_hang.ipynb](dong_hang.ipynb), sau đó dùng hai prompt Codex khi cần | Nháp dóng, đề xuất và bản duyệt trong `05_quan_ly/dong_hang/` |
+| Xuất | `CHE_DO = "xuat"` trong notebook dóng hàng | TSV, XLSX và `notes.xlsx` trong `04_dong_hang/` |
+
+Ví dụ bên dưới dùng Văn sách Thi Đình (`CPO_11`, bài 14–18) và Thơ văn Lý–Trần (`CPO_12`, bài 131–207). Prompt 1 quét theo đường dẫn được giao. Prompt 2 giới hạn ở hai sách này. Bắc sứ (`CPO_09`) có cell riêng. Mỗi mục Bắc sứ cần khoảng dòng Hán và Việt đã đối chiếu nội dung trong `KHOANG_DONG_THEO_MUC`. Khoảng dòng tính từ 1, bỏ dòng trống, tính cả hai đầu.
+
+### Chuẩn bị môi trường local
+
+1. Mở thư mục repo trong VS Code. Với các notebook chạy local, chọn kernel từ `.venv/Scripts/python.exe` (Windows) hoặc `.venv/bin/python` (Linux/macOS). Phần [Chạy ngay](#chạy-ngay) có lệnh tạo `.venv` nếu máy chưa có.
+2. Kiểm tra các gói cho notebook và luồng dóng hàng. Nếu còn thiếu, cài vào cùng `.venv`:
+
+```powershell
+.\.venv\Scripts\python.exe -c "import ipykernel, pandas, requests, yaml, xlsxwriter; print('OK')"
+.\.venv\Scripts\python.exe -m pip install -r ..\requirements\base.txt
+```
+
+### Bước 1. Xác nhận đề tài và phạm vi
+
+Đọc bảng phân công local tại [phancong.md](../phancong.md) để xác định sách, bài và các mốc trang. Đối chiếu `MA_DE_TAI`, mã sách và đường dẫn nguồn trong [ten_file.py](../ten_file.py) hoặc trong `configs/corpora/*.yaml`. Bước này dùng bảng phân công và file cấu hình.
+
+### Bước 2. Kiểm kê nguồn
+
+Lập bảng ghi tên tài liệu, bản Hán hoặc bản Việt, dạng PDF scan hay PDF Text và phạm vi được giao. Đặt file gốc theo [hướng dẫn thư mục dữ liệu](../data/README.md). Dùng bước kiểm kê để chọn xử lý OCR cho bản scan hoặc trích chữ cho bản có lớp text.
+
+### Bước 3. Cắt nguồn
+
+Mở [01_source_preparation.ipynb](01_source_preparation.ipynb), chạy Cell 1 rồi chọn đúng cell của tác phẩm cần cắt (`Bắc sứ thông lục`, `Hịch tướng sĩ`, `Thơ văn Lý–Trần`, `Văn sách thi Đình`). Bạn có thể tự nhập khoảng trang qua `CUSTOM_PAGES` hoặc `PROMPT_INPUT_PAGES = True`, sau đó chọn `ACTION = "prepare"`, `"info"`, `"check"`, `"crop_page"` hoặc `"gui"` để [cắt bằng chuột](#cắt-bằng-chuột). Lưu từng vùng bằng mã bài, bản văn và phiên bản. Kiểm tra thứ tự các phần trong `01_nguon/` trước khi chuyển qua OCR.
+
+### Bước 4. OCR hoặc trích TXT thô
+
+Dùng [02_ocr/OCR_viet.ipynb](02_ocr/OCR_viet.ipynb) cho nhánh tiếng Việt / Kaggle–Colab và [02_ocr/OCR_han.ipynb](02_ocr/OCR_han.ipynb) để chạy OCR Hán kèm đối chiếu chéo PaddleOCR + CLC và hiệu đính thủ công.
+
+1. Chọn nguồn và bản văn trong `SELECTED_JOBS`. Chạy thử một ảnh ở mục 10 để xem vùng nhận dạng và thứ tự các dòng. Xem [mục OCR bên dưới](#ocr-trên-kaggle--google-colab) cho từng loại ảnh.
+2. Chạy mục 11 cho phạm vi đã chọn. Đưa TXT từng ảnh và metadata về đúng cây `02_ocr_tho/` trên máy local. Giữ tên thư mục bài, bản văn và tên `phanNNNN_pdfpNNNN` để truy ảnh.
+3. Với Việt Bắc sứ, dùng hai TXT lớp chữ đã lưu trong `01_nguon/` làm đầu vào làm sạch.
+
+### Bước 5. Làm sạch TXT
+
+Dùng [clean_text.ipynb](clean_text.ipynb) hoặc [03_text_cleaning.ipynb](03_text_cleaning.ipynb) trên máy local.
+
+1. Kiểm tra `PROJECT_ROOT`, `SELECTED_CODES` và `SELECTED_KINDS`. `INPUT_GRANULARITY = "parts"` đọc TXT từng ảnh. Đặt `WRITE_OUTPUTS = False` ở lượt xem trước.
+2. Duyệt `duyet_lam_sach.csv` và đối chiếu ảnh cho các dòng bị đánh dấu (có thể dùng thêm [hai prompt làm sạch Hán/Việt](#làm-sạch-văn-bản-clean_textipynb--03_text_cleaningipynb-và-kiểm-tra-thủ-công-với-llm) để trợ giúp phát hiện lỗi trước khi bạn duyệt).
+3. Đặt `WRITE_OUTPUTS = True` và chạy lại đến mục 5.2 để ghi TXT vào `03_text_sach/`. Notebook báo xung đột nếu tệp đích có nội dung khác. Nếu đã có TXT đúng bài và phiên bản, dùng bộ đó làm đầu vào bước 6.
+
+Thư mục `san_pham/TV02/05_quan_ly/<RUN_NAME>/` (hoặc `TV04`) chứa `duyet_lam_sach.csv`, `work_manifest.json`, `changes.jsonl` và `summary.json`. Với thiết lập `parts`, tên lượt mặc định là `clean_v02_parts` / `clean_v04_parts`. Nếu TXT đã được rà soát lần sau, dùng manifest của lần rà soát tương ứng với SHA-256 hiện tại để lần về dòng OCR và ảnh.
+
+### Bước 6. Tách đơn vị và tạo bản nháp
+
+Dùng [dong_hang.ipynb](dong_hang.ipynb) (hoặc [04_text_segmentation.ipynb](04_text_segmentation.ipynb) & [05_text_alignment.ipynb](05_text_alignment.ipynb)) trên máy local. Chọn cell của sách cần chạy. Ví dụ tạo nháp cho bài 131 trong cell **Thơ văn Lý–Trần**:
+
+```python
+CHAY_HANG_LOAT = False
+SO_BAI = 131
+CHE_DO = "nhap"
+```
+
+| Cấu hình | Cách dùng |
+|---|---|
+| `CHE_DO = "nguon"` | Xem TXT có số dòng. `TU_KHOA` lọc các dòng chứa từ cần tìm. |
+| `CHE_DO = "nhap"` | Tách đơn vị, dóng Hán–âm bằng code Lab và hai từ điển, xử lý Hán–nghĩa qua CLC, tạo prompt thơ nếu có bản thơ. |
+| `CHAY_HANG_LOAT = True` | Điền `DANH_SACH_BAI`, ví dụ `[131, 140, 148]`. Với Thi Đình dùng số bài 14–18. |
+| `THE_LOAI`, `THE_LOAI_THEO_BAI` | Chọn tách theo dòng thơ hoặc theo câu văn xuôi. |
+| `TIEU_DE_THEO_BAI` | Số dòng đầu cần bỏ của từng bản. Chỉ thay khi đã xác định đúng ranh giới nội dung. |
+
+`nhap` dùng `clc_response.json` khi `request_sha256` khớp nội dung yêu cầu hiện tại. Khi thiếu cache hoặc hash lệch, chế độ `nhap` thông thường sẽ thử gọi CLC nếu kernel có `CLC_API_KEY`. Nếu chủ động cần tạo phản hồi mới, dùng cell **Nạp token CLC** với ô nhập ẩn. Hai prompt bên dưới làm việc với phản hồi đã lưu. Khi cần chạy lại ngoại tuyến, dùng Prompt 2 để chặn nhánh gửi request mới trong lượt chạy.
+
+Notebook in đường dẫn thư mục duyệt. Ví dụ với `bai0140`:
+
+```text
+san_pham/TV02/CV06_CPO_12/05_quan_ly/dong_hang/TV02/bai0140/
+```
+
+| Tệp | Dùng khi nào |
+|---|---|
+| `draft.json` | Tra `work`, `fingerprint`, cấu hình tách, `units`, TXT nguồn và các liên kết nháp. |
+| `clc_request.json`, `clc_response.json` | Đối chiếu đầu vào và toàn bộ nhóm CLC đã lưu. |
+| `clc_mismatch.json` | Xác định vị trí báo lệch. Đối chiếu `work`, `fingerprint` và `status.CLC` trong nháp trước khi dùng. |
+| `poetry_prompt.json`, `poetry_result.json` | Đọc câu Hán và thơ theo ID, lưu nhóm đề xuất và `needs_review` nếu có. |
+| `review_template.json`, `review.json` | Tạo và sửa bản duyệt. Chế độ xuất đọc `review.json`. |
+
+### Bước 7. Dóng hàng, xem bảng và duyệt cặp
+
+Dùng [dong_hang.ipynb](dong_hang.ipynb) và [hai prompt Codex](#hai-prompt-codex). Lượt `nhap` ở bước 6 cũng tạo liên kết Hán–âm và lấy nhóm Hán–nghĩa từ CLC khi có phản hồi phù hợp. Dùng kết quả đó để tiếp tục ghép thơ và rà từng bài.
+
+1. Chạy [Prompt 1](#prompt-1-ghép-thơ-và-rà-lỗi-clc) để ghép thơ và rà mismatch CLC.
+2. Dùng `review.json` để chốt `links.am`, `links.nghia` và `links.tho`. Với bài mới chỉ có đề xuất thơ, tạo bản duyệt từ `review_template.json`, đưa các nhóm thơ khớp fingerprint vào `links.tho` và tính lại `skipped` theo toàn bộ ba danh sách.
+3. Trong mỗi cột, các ID trong một nhóm phải liền nhau. Các nhóm đi theo thứ tự nguồn và mỗi ID chỉ được dùng một lần trong cột đó. Một ID Hán có thể đi với cả âm, nghĩa và thơ. Ghi lý do vào `skipped` cho từng ID chưa dùng. Hán còn ghép ở ít nhất một trong ba cột thì không thêm vào `skipped`.
+4. Với `needs_review`, tra ID trong `draft.json` để đọc đúng câu. Đọc thêm hai dòng kế cận, rồi dùng ảnh nguồn nếu cần xác nhận ký tự. [Prompt 2](#prompt-2-truy-vết-sửa-txt-sạch-và-dóng-lại) thực hiện truy vết, sửa lỗi có bằng chứng và dóng lại sau khi TXT thay đổi.
+
+Để xem nhanh một **bản duyệt có sẵn** theo bốn cột, chạy cell sau trong notebook local (ví dụ với `bai0140`):
+
+```python
+from pathlib import Path
+import sys
+
+import pandas as pd
+from IPython.display import display
+
+root = Path.cwd().parent if Path.cwd().name == "notebooks" else Path.cwd()
+if str(root) not in sys.path:
+    sys.path.insert(0, str(root))
+
+from cong_cu.dong_hang import HEADERS, make_rows, read_json, verify_identity
+
+book, work = "CPO_12", "bai0140"
+folder = root / "san_pham" / "TV02" / f"CV06_{book}" / "05_quan_ly" / "dong_hang" / "TV02" / work
+draft = read_json(folder / "draft.json")
+review = read_json(folder / "review.json")
+verify_identity(review, draft["work"], draft["fingerprint"])
+rows = make_rows(draft["units"], review["links"])
+display(pd.DataFrame([row["cells"] for row in rows], columns=HEADERS))
+```
+
+`work` nhận diện sách, bài, thành viên và mục nếu có. `fingerprint` nhận diện phiên bản nguồn và cách tách đơn vị. Trong `units`, `start` và `end` là chỉ số ký tự trong TXT đã giải mã UTF-8. `text[start:end]` lấy từ `start` đến ngay trước `end`. `part` chỉ phần ngăn bởi `\f` trong TXT. Dùng manifest để xác định trang PDF thực tế. Sau khi sửa TXT, dùng Prompt 2 để dựng lại đơn vị và ánh xạ ID.
+
+### Xuất tệp nộp
+
+Dùng [dong_hang.ipynb](dong_hang.ipynb) (hoặc [05_text_alignment.ipynb](05_text_alignment.ipynb)) với chế độ `xuat`.
+
+1. Chốt các cặp trong `review.json`, kiểm tra lý do `skipped` rồi lưu `"approved": true`.
+2. Trong cell đúng sách của `dong_hang.ipynb`, chọn bài đã duyệt. Ví dụ:
+
+   ```python
+   CHAY_HANG_LOAT = False
+   SO_BAI = 140
+   CHE_DO = "xuat"
+   ```
+
+   Để xuất nhiều bài, đặt `CHAY_HANG_LOAT = True` và điền `DANH_SACH_BAI` bằng số các bài đã duyệt. `xuat` dùng cấu hình từ `draft.json` và kiểm tra fingerprint với TXT hiện tại.
+3. Lấy `*_parallel.xlsx` và `*_parallel.tsv` trong thư mục từng bài. Ví dụ:
+
+   ```text
+   san_pham/TV02/CV06_CPO_12/04_dong_hang/bai0140/
+   ├── CPO_12_bai0140_parallel.xlsx
+   ├── CPO_12_bai0140_parallel.tsv
+   └── notes.xlsx
+   ```
+
+4. Mở sheet `DONG_HANG` để kiểm tra bốn cột **Hán – Dịch âm – Dịch nghĩa – Dịch thơ**. TSV lưu cùng dữ liệu UTF-8, với mỗi hàng gồm bốn ô ngăn bằng tab và không có hàng tiêu đề. `notes.xlsx` ghi các đơn vị bỏ lại, ghi chú links và chẩn đoán Lab. Ô trống có thể là bản văn thiếu trong nguồn hoặc chưa có liên kết. Kiểm tra `notes.xlsx` và `draft.json` để xác định lý do trước khi tính số cặp hợp lệ.
+
+Bộ xuất TV02 ngày 21/11/2026 đã ghi **5 bài Thi Đình và 77 bài Lý–Trần**, tổng **1.273 hàng**. Phiên đó kiểm tra Excel khớp TSV. **32 bài có TXT nghĩa nhưng chưa có nhóm nghĩa trong bảng**. Nếu đang dùng bộ xuất này, mở `04_dong_hang/` của từng sách. Báo cáo phiên rà soát nằm tại `san_pham/TV02/05_quan_ly/ra_soat_dong_hang_2026-11-21/BAO_CAO.md`.
+
+### Lỗi thường gặp khi dóng hoặc xuất
+
+| Hiện tượng | Cách xử lý |
+|---|---|
+| `approved=false` | Mở `review.json` của đúng bài và chốt cặp trước khi cho phép xuất. |
+| Lệch `work` hoặc `fingerprint` | Mở đúng thư mục bài. Nếu nguồn hoặc cách tách đã thay đổi, chạy quy trình ánh xạ lại ở Prompt 2. |
+| CLC có cache nhưng cột nghĩa chưa lên | Đọc `status.CLC` trong `draft.json`. Với lỗi lệch văn bản còn hiệu lực, dùng Prompt 1. Với request đổi, dùng quy trình offline ở Prompt 2 và ghi phần nghĩa còn thiếu. |
+| Thơ đã có JSON nhưng bảng xuất còn trống | Xem `links.tho` của `review.json`. Đưa nhóm thơ khớp fingerprint vào bản duyệt và tính lại `skipped`. |
+| Tệp đích đã có nội dung khác | Bảo toàn bản xuất cũ và lưu riêng sau khi bạn quyết định dùng bản mới. Pipeline chặn ghi đè xung đột. |
+| Ông/bà, tên riêng hoặc chữ Hán khác giữa hai bản | Đối chiếu ảnh của từng bản rồi đánh giá theo nghĩa. Chỉ hiệu đính TXT khi có lỗi được nguồn xác nhận. |
+
+---
+
+## Hai prompt Codex
+
+Phần này chứa hai prompt Codex dùng để hậu kiểm và truy vết dóng hàng. Nội dung đầy đủ của hai prompt nằm ở [Phụ lục cuối tài liệu](#phụ-lục-các-prompt-tham-khảo).
+
+- **[Prompt 1 — Ghép thơ và rà lỗi CLC](#prompt-1-ghép-thơ-và-rà-lỗi-clc):** dùng sau khi tạo nháp cho các bài cần xử lý. Ghép Hán–thơ, rà mismatch CLC và lưu bản chờ duyệt.
+- **[Prompt 2 — Truy vết, sửa TXT sạch và dóng lại](#prompt-2-truy-vết-sửa-txt-sạch-và-dóng-lại):** dùng khi cho phép Agent sửa TXT sạch và chạy lại lô bài với kiểm tra offline.
+
+---
+
+## Chạy ngay
+
+Mở [01_source_preparation.ipynb](01_source_preparation.ipynb), chạy Cell 1 để nạp môi trường rồi thực thi cell của từng tác phẩm (`CPO_09` Bắc sứ, `CPO_10` Hịch tướng sĩ, `CPO_12` Lý–Trần, `CPO_11` Văn sách Thi Đình) với số trang bạn tự nhập (`CUSTOM_PAGES` hoặc `PROMPT_INPUT_PAGES = True`) và `ACTION = "info" | "prepare" | "check" | "summary" | "crop_page" | "text_lines" | "gui"`.
+
+Môi trường `.venv` nếu chưa có cần tạo với Python 3.11 trở lên có Tkinter:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+Repo GitHub chỉ chứa mã nguồn, hướng dẫn và tests. PDF nguồn, `Guideline.pdf`, sản phẩm cắt, lịch sử thao tác và `.venv` được giữ ở máy, không đưa vào Git. Sau khi clone, đặt các PDF vào `data/` theo [hướng dẫn dữ liệu](../data/README.md) hoặc sửa `TEN_NGUON` trong [ten_file.py](../ten_file.py). Các tests tích hợp cần những PDF này; thiếu dữ liệu sẽ được ghi nhận là bỏ qua, không được tính là đã kiểm tra thành công.
+
+**`MA_DE_TAI` trong [ten_file.py](../ten_file.py) phải khớp mã đăng ký của nhóm.** Giữ cấu hình bạn đã đặt; chỉ đổi khi cần sửa mã đăng ký. Đổi mã sẽ đổi thư mục đầu ra của các lần chạy sau; tool không tự di chuyển sản phẩm cũ.
+
+### Cắt bằng chuột
+
+1. Mở đúng script của sách. Tool kiểm tra bản sao gốc rồi hiển thị PDF.
+2. Nhập **mã tác phẩm**, ví dụ `bai0131`. Đây là mã bài, không phải trang PDF.
+3. Chọn **Hán / Dịch âm / Dịch nghĩa / Dịch thơ**.
+4. Kéo chuột khoanh đúng vùng của bản văn đó, bấm **Lưu vùng vào tác phẩm** hoặc `Ctrl+S`.
+5. Nếu bản văn còn tiếp ở trang sau, mở trang tiếp theo, **giữ nguyên mã tác phẩm, loại bản và phiên bản**, rồi chọn/lưu tiếp. Tool lưu các PNG vào cùng thư mục tác phẩm/bản văn.
+6. Làm tương tự cho các bản còn lại. Nút **Xem đủ/thiếu bản văn** giúp kiểm tra phần đã cắt.
+
+Thứ tự bạn bấm lưu là thứ tự các phần trong mỗi bản văn. Không suy ra thứ tự chỉ từ số trang: đôi khi phải quay lại phần trước. Lưu lại đúng vùng với cùng cấu hình thì tool bỏ qua bản trùng. Vùng gần trùng sẽ có cảnh báo trước khi lưu thêm.
+
+### Xem, sửa và hoàn tác
+
+- Danh sách bên phải hiển thị các vùng của bài/phiên bản đang chọn. Bấm một dòng để xem ảnh hoặc đoạn TXT. Khung xanh trên trang là vùng đã lưu; khung xám là vùng của bài khác trên cùng trang.
+- **Chỉnh vùng đã chọn**: mở lại đúng trang và khung cũ. Khoanh lại rồi bấm **Lưu thay khung vùng đã chọn**. Giữ nguyên mã bài, bản văn, phiên bản và số phần. Có thể đổi trang để sửa phần đã lấy nhầm trang. Với vùng TXT, chọn lại đoạn chữ.
+- **Bỏ vùng đã chọn**: bỏ vùng khỏi sản phẩm đang dùng; TXT ghép được cập nhật theo các phần còn lại. Các phần khác giữ số thứ tự cũ để không mất mã tham chiếu.
+- **Hoàn tác thao tác gần nhất**: khôi phục trạng thái trước lần lưu, thay, bỏ vùng hoặc xác nhận tiến độ. Có thể hoàn tác nhiều lần, kể cả sau khi mở lại tool.
+- Dữ liệu vùng lưu từ bản tool cũ vẫn xem/sửa/bỏ được. Hoàn tác chỉ áp dụng cho các thao tác được thực hiện từ bản nâng cấp có lịch sử.
+- Chỉnh vùng giữ nguyên loại bản văn. Nếu lưu sai loại Hán/dịch nghĩa, bỏ vùng cũ rồi chọn đúng loại và lưu lại; có thể hoàn tác thao tác bỏ nếu cần.
+
+Các bản trước/sau được lưu trong `05_quan_ly/lich_su/`. Không xóa thư mục này nếu còn cần hoàn tác. Lịch sử sử dụng thêm dung lượng theo số thao tác; metadata được nén để giảm dung lượng. File đã sửa bên ngoài tool sẽ được giữ và báo xung đột. Nếu lần ghi bị ngắt, lần mở tiếp theo phục hồi trạng thái trước thao tác chưa hoàn tất.
+
+### Mặc định nguồn, nhớ vị trí và tiến độ
+
+- Nguồn riêng bản Việt của Bắc sứ mặc định **Dịch nghĩa**; nguồn riêng Hán mặc định **Hán**. Với PDF chứa nhiều bản văn, bạn vẫn chọn đúng loại vùng cần lấy. Nếu chọn loại khác ngôn ngữ của nguồn riêng, tool cảnh báo trước khi lưu.
+- Tool nhớ trang gần nhất của từng nguồn, bài, loại bản văn, phiên bản và mức phóng trong `05_quan_ly/phien_lam_viec.json`; mở lại để tiếp tục từ phiên đã lưu.
+- **Tiến độ bốn bản văn** hiển thị Hán, dịch âm, dịch nghĩa, dịch thơ theo từng bài. Chỉ bấm **Đã kiểm tra đủ / bỏ xác nhận** sau khi bạn đã đối chiếu trọn bản văn. Thêm, sửa hoặc bỏ vùng sẽ đưa bản văn đó về trạng thái đang làm.
+- Trạng thái đủ vùng do bạn xác nhận, không chứng minh câu đã dóng hàng đúng hoặc đã đạt chỉ tiêu cặp. Ghi nhận không có bản văn chỉ dùng khi nguồn thực sự không có.
+
+Nguồn và bản sao được kiểm tra hash khi mở/chuẩn bị. Các lần lưu tiếp trong cùng phiên tái sử dụng kết quả khi đường dẫn, dung lượng và thời gian file không đổi. Nếu thông tin file thay đổi, tool kiểm tra lại; `--check` luôn đọc và kiểm tra đầy đủ.
+
+Nếu sách thực sự không có một bản dịch, ghi lý do ở ô ghi chú rồi bấm **Ghi nhận không có bản này**. Không dùng chức năng này để bỏ qua phần chưa đọc. Tool không tạo bản dịch hoặc file TXT rỗng thay phần thiếu.
+
+**Chú thích:** ở bước 3 ảnh còn giữ nguyên các chỉ dấu trong thân bài. Khoanh phần nội dung chính, để khối khảo đính/chú thích riêng ngoài vùng. Việc loại chú thích không thuộc nội dung Hán và làm sạch ký tự là bước 5, không phải sửa ảnh nguồn.
+
+### Cắt TXT và PDF Text
+
+- **TXT UTF-8 có sẵn:** bấm **Mở TXT để chọn chữ**, bôi đen đúng phần cần lấy rồi lưu. Mã tác phẩm, loại bản và phiên bản lấy từ cửa sổ chính. File nguồn được sao lưu.
+- **PDF có lớp chữ:** khoanh vùng như bình thường, bật **Lấy thêm lớp chữ PDF**. Tool xuất PNG và TXT thô của vùng. Đây là tùy chọn trích xuất ở bước 4; không tự OCR hoặc coi text là đã sạch. PDF Text xoay chưa hỗ trợ trích chữ vùng.
+- **PDF scan:** chỉ xuất PNG. Nếu bật lấy chữ nhưng vùng không có text, tool báo lỗi và không tạo TXT rỗng. Nếu chữ nguồn bị lỗi font thì TXT vẫn cần sửa.
+- **Một phiên bản của một bản văn dùng một chế độ:** ảnh PDF, PDF có trích text, hoặc TXT. Muốn đổi chế độ, dùng phiên bản mới để tránh ghép TXT thiếu một nửa.
+
+Lệnh cắt TXT theo dòng (thay đường dẫn bằng TXT thật):
+
+```powershell
+.\.venv\Scripts\python.exe .\cat_ly_tran.py --text-file "duong_dan_text.txt" --lines 10 20 --work bai0131 --kind dich_nghia
+```
+
+TXT ghép có đuôi `_trich_xuat_tho.txt`, chưa phải `han.txt`/`viet.txt` sạch. Công cụ chỉ giữ đoạn được chọn, không dịch, không cắt câu hoặc suy đoán Hán/Việt theo ký tự.
+
+### Kiểm tra / chuẩn bị lại
+
+Các cờ dùng được cho cả bốn script:
+
+```powershell
+.\.venv\Scripts\python.exe .\cat_ly_tran.py --prepare
+.\.venv\Scripts\python.exe .\cat_ly_tran.py --info
+.\.venv\Scripts\python.exe .\cat_ly_tran.py --check
+.\.venv\Scripts\python.exe .\cat_ly_tran.py --summary --work bai0131
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+`--check` so SHA-256 nguồn, bản sao và sản phẩm, phát hiện file thiếu/bị sửa. Nó không kiểm tra nghĩa, thiếu câu hay đủ ranh giới tác phẩm. Hai cửa sổ có thể đọc cùng sách nhưng không được ghi cùng lúc: khóa ghi giúp tránh mất manifest.
+
 # OCR trên Kaggle / Google Colab
 
 Notebook: [ocr_nlp.ipynb](ocr_nlp.ipynb)

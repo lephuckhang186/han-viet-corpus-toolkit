@@ -1,0 +1,33 @@
+BÁO CÁO DÓNG HÀNG BÀI 0314–0315
+
+Phạm vi: CPO_12_TV04, bài 0314 và bài 0315.
+Nguồn: ảnh PNG trong LyTran/01_nguon.
+Text sạch: các tệp tương ứng trong LyTran/03_text_sach.
+Bản Việt dùng để dóng hàng: dịch âm, dịch nghĩa và dịch thơ theo dữ liệu hiện có.
+Phương pháp: đối chiếu thủ công ảnh nguồn; làm sạch OCR; dóng hàng 1–n theo tiêu đề và từng câu thơ; gộp các dạng dịch trong cùng một vế Việt.
+
+Thống kê bài 0314:
+- Dòng Hán dùng để dóng: 9 (1 tiêu đề + 8 câu)
+- Đơn vị Việt dùng để dóng: 18 (9 dịch âm + 9 dịch nghĩa; nguồn không có dịch thơ)
+- Hàng dóng: 9
+- Kiểu dóng: 1–2
+
+Thống kê bài 0315:
+- Dòng Hán dùng để dóng: 9 (1 tiêu đề + 8 câu)
+- Đơn vị Việt dùng để dóng: 27 (9 dịch âm + 9 dịch nghĩa + 9 dịch thơ)
+- Hàng dóng: 9
+- Kiểu dóng: 1–3
+
+Tổng cộng:
+- Dòng Hán: 18
+- Đơn vị Việt: 45
+- Hàng dóng: 18
+
+Kết quả tự kiểm tra:
+- Mỗi dòng TSV có đúng hai vế, phân cách bằng một ký tự tab.
+- Không có dòng trống, tab hoặc xuống dòng bên trong một vế.
+- Không có dòng thiếu vế.
+- Tất cả các hàng đều là kiểu 1–n: bài 0314 là 1–2, bài 0315 là 1–3.
+- Nội dung TSV và sheet DONG_HANG trong XLSX tương ứng từng dòng.
+- Mỗi tệp XML tuân theo cấu trúc FILE/meta/SECT/PAGE/STC của mẫu HanViet_sample.xml.
+- Nội dung các cặp C/V trong XML tương ứng từng dòng TSV.
