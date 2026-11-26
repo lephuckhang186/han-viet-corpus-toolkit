@@ -25,6 +25,8 @@ from .validation.validators import (
 
 def clean_book_root(project, book, member, *, output_root: Path | None = None, topic: str | None = None):
     project = Path(project)
+    if book == "CP024":
+        return (Path(output_root) if output_root is not None else project / "san_pham") / member / book
     if topic is None:
         topic = run_path(str(project / "ten_file.py"))["MA_DE_TAI"]
     base = Path(output_root) if output_root is not None else (project / "san_pham")
@@ -33,6 +35,14 @@ def clean_book_root(project, book, member, *, output_root: Path | None = None, t
 
 def clean_sources_by_work(book_root, book, member, *, data_root: Path | None = None):
     """Index assembled files and, for LyTran, ordered per-page parts."""
+    if book == "CP024":
+        from .cp024 import discover_sources
+        base = Path(data_root) if data_root is not None else book_root.parents[2] / "data"
+        inventory, errors = discover_sources(base / "CP024" / "03_text_sach")
+        if errors:
+            raise ValueError("; ".join(errors))
+        return {row["work"]: {"han": [row["han_path"]], "nghia": [row["viet_path"]]}
+                for row in inventory if row["status"] == "ok"}
     prefix = f"{book}_{member}_"
     name = re.compile(rf"{re.escape(prefix)}((?:bai|quyen)\d+)_.*\.txt")
     works = {}
@@ -60,7 +70,7 @@ def alignment_audit_dir(book_root, member, work, section=None):
 
 
 def load_work(project, book, work, member, genre, titles, section=None, ranges=None, *, data_root=None, output_root=None):
-    if not re.fullmatch(r"CPO_\d{2}", book) or not re.fullmatch(r"(?:bai|quyen)\d+", work):
+    if not re.fullmatch(r"(?:CPO_\d{2}|CP024)", book) or not re.fullmatch(r"(?:bai|quyen)\d+", work):
         raise ValueError("Mã sách hoặc bài/quyển không hợp lệ.")
     if not re.fullmatch(r"TV\d{2}", member) or (section and not re.fullmatch(r"muc\d+", section)):
         raise ValueError("Mã thành viên hoặc mục không hợp lệ.")
@@ -112,7 +122,7 @@ def load_work(project, book, work, member, genre, titles, section=None, ranges=N
     return book_root, id_prefix, units, sources, fingerprint
 
 
-def run_alignment(project, book, work, *, member="TV02", genre="poetry", titles=None, section=None, ranges=None, export=False, data_root=None, output_root=None, dict_root=None):
+def run_alignment(project, book, work, *, member="TV02", genre="poetry", titles=None, section=None, ranges=None, export=False, data_root=None, output_root=None, dict_root=None, meaning_method="clc"):
     project = Path(project).resolve()
     titles = titles or {}
     root, work_id, units, sources, fingerprint = load_work(
@@ -186,12 +196,31 @@ def run_alignment(project, book, work, *, member="TV02", genre="poetry", titles=
 
     meaning = {}
     chosen = None
-    if units["nghia"]:
+    if units["nghia"] and book == "CP024" and meaning_method == "dp":
+        from .cp024 import align_meaning_dp
+        links["nghia"] = validate_links(align_meaning_dp(units["han"], units["nghia"]), units["han"], units["nghia"], "nghia")
+        chosen = "DP"
+        meaning[chosen] = links["nghia"]
+        status["DP"] = f"{len(links['nghia'])} nhóm đề xuất theo độ dài. Cần duyệt nội dung."
+    elif units["nghia"]:
         nghia = public_units(units["nghia"])
-        (audit / "clc_request.json").write_bytes(json_bytes(clc_request(han, nghia)))
+        clc_han, clc_nghia = han, nghia
+        if book == "CP024" and ranges is not None:
+            from .cp024 import clc_line_units
+            paths = clean_sources_by_work(root, book, member, data_root=data_root)[work]
+            clc_han = clc_line_units(paths["han"][0], "han", ranges["han"], work_id)
+            clc_nghia = clc_line_units(paths["nghia"][0], "nghia", ranges["nghia"], work_id)
+            if len(clc_han) > 10 or len(clc_nghia) > 10:
+                raise ValueError("Mỗi yêu cầu CLC của CP024 chỉ được chứa tối đa 10 dòng nguồn mỗi bản.")
+        (audit / "clc_request.json").write_bytes(json_bytes(clc_request(clc_han, clc_nghia)))
         try:
             response_path = audit / "clc_response.json"
-            candidate = validate_links(align_clc(han, nghia, response_path=response_path), han, nghia, "nghia")
+            if book == "CP024" and ranges is not None:
+                proposed = align_clc(clc_han, clc_nghia, response_path=response_path, response_han=han, response_nghia=nghia,
+                                     allow_terminal_quote_omission=True)
+            else:
+                proposed = align_clc(han, nghia, response_path=response_path)
+            candidate = validate_links(proposed, han, nghia, "nghia")
         except CLCTextMismatch as error:
             mismatch_path = audit / "clc_mismatch.json"
             mismatch_path.write_bytes(json_bytes({**identity, **error.details}))

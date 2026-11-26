@@ -61,7 +61,7 @@ class CLCTextMismatch(ValueError):
         }
 
 
-def clc_span(row, key, text_field, units, first_available=0):
+def clc_span(row, key, text_field, units, first_available=0, *, allow_terminal_quote_omission=False):
     start, end = row.get(f"{key}_start"), row.get(f"{key}_end")
     if type(start) is not int or type(end) is not int or not 0 <= start <= end:
         raise ValueError(f"CLC trả về khoảng dòng {key} ngoài phạm vi đầu vào.")
@@ -74,6 +74,23 @@ def clc_span(row, key, text_field, units, first_available=0):
     texts = ["".join(unit["text"].split()) for unit in units]
     if first_available <= start <= end < len(units) and "".join(texts[start:end + 1]) == target:
         return start, end + 1
+
+    if allow_terminal_quote_omission:
+        # Some CLC responses omit closing quotation marks at the end of a span.
+        # Match the original span without changing its text or discarding other characters.
+        quotes = "」』”’\"»"
+        matches = []
+        for first in range(first_available, len(texts)):
+            combined = ""
+            for last in range(first, len(texts)):
+                combined += texts[last]
+                if combined == target or combined.rstrip(quotes) == target:
+                    matches.append((first, last + 1))
+                if len(combined.rstrip(quotes)) > len(target):
+                    break
+        if len(matches) == 1:
+            return matches[0]
+        raise CLCTextMismatch(key, start, end, selected, echoed)
 
     match = None
     for first in range(first_available, len(texts)):
@@ -107,14 +124,40 @@ def clc_result(payload):
     return result
 
 
-def clc_response(payload, han, nghia):
+def clc_response(payload, han, nghia, *, allow_terminal_quote_omission=False):
     links = []
     next_han = next_vi = 0
+    pending_han = pending_vi = ""
+    quotes = "」』”’\"»"
     for row in clc_result(payload):
         if not isinstance(row, dict):
             raise ValueError("CLC trả về liên kết sai cấu trúc.")
-        first_han, next_han = clc_span(row, "han", "han_text", han, next_han)
-        first_vi, next_vi = clc_span(row, "vi", "vietnamese_text", nghia, next_vi)
+        if allow_terminal_quote_omission:
+            row = dict(row)
+            consumed_quotes = []
+            for field, pending in (("han_text", pending_han), ("vietnamese_text", pending_vi)):
+                value = row.get(field)
+                if pending and isinstance(value, str) and value.lstrip().startswith(pending):
+                    row[field] = value.lstrip()[len(pending):].lstrip()
+                    consumed_quotes.append(field)
+            pending_han = pending_vi = ""
+            han_empty = not str(row.get("han_text") or "").strip()
+            vi_empty = not str(row.get("vietnamese_text") or "").strip()
+            if han_empty and vi_empty and len(consumed_quotes) == 2:
+                continue
+            if han_empty or vi_empty:
+                raise ValueError("CLC tách dấu ngoặc thành nhóm không có nội dung tương ứng; cần duyệt thủ công.")
+        first_han, next_han = clc_span(row, "han", "han_text", han, next_han, allow_terminal_quote_omission=allow_terminal_quote_omission)
+        first_vi, next_vi = clc_span(row, "vi", "vietnamese_text", nghia, next_vi, allow_terminal_quote_omission=allow_terminal_quote_omission)
+        if allow_terminal_quote_omission:
+            for units, end, field in ((han, next_han, "han_text"), (nghia, next_vi, "vietnamese_text")):
+                original = units[end - 1]["text"].rstrip()
+                suffix = original[len(original.rstrip(quotes)):]
+                if suffix and not row[field].rstrip().endswith(suffix):
+                    if field == "han_text":
+                        pending_han = suffix
+                    else:
+                        pending_vi = suffix
         link = {
             "han_ids": [unit["id"] for unit in han[first_han:next_han]],
             "nghia_ids": [unit["id"] for unit in nghia[first_vi:next_vi]],
@@ -193,10 +236,14 @@ def request_clc(body):
         raise ValueError("CLC trả về nội dung ngoài định dạng JSON.") from None
 
 
-def align_clc(han, nghia, *, response_path=None):
+def align_clc(han, nghia, *, response_path=None, response_han=None, response_nghia=None, allow_terminal_quote_omission=False):
+    if (response_han is None) != (response_nghia is None):
+        raise ValueError("Phải cung cấp cả hai danh sách đơn vị để đối chiếu phản hồi.")
+    matched_han = han if response_han is None else response_han
+    matched_nghia = nghia if response_nghia is None else response_nghia
     body = clc_request(han, nghia)
     if response_path is None:
-        return clc_response(request_clc(body), han, nghia)
+        return clc_response(request_clc(body), matched_han, matched_nghia, allow_terminal_quote_omission=allow_terminal_quote_omission)
 
     request_id = hashlib.sha256(json.dumps([CLC_ALIGNMENT_URL, body], sort_keys=True).encode("utf-8")).hexdigest()
     try:
@@ -204,9 +251,9 @@ def align_clc(han, nghia, *, response_path=None):
     except (FileNotFoundError, UnicodeError, json.JSONDecodeError):
         cached = None
     if isinstance(cached, dict) and cached.get("request_sha256") == request_id:
-        return clc_response(cached.get("response"), han, nghia)
+        return clc_response(cached.get("response"), matched_han, matched_nghia, allow_terminal_quote_omission=allow_terminal_quote_omission)
 
     result = clc_result(request_clc(body))
     payload = {"is_success": True, "code": "000000", "data": {"result": result}}
     write_json(response_path, {"request_sha256": request_id, "response": payload})
-    return clc_response(payload, han, nghia)
+    return clc_response(payload, matched_han, matched_nghia, allow_terminal_quote_omission=allow_terminal_quote_omission)
